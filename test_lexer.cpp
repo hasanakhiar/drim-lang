@@ -7,8 +7,12 @@ int main()
 
     std::string sourceCode =
         "a12 = 10 // This is a comment\n"
-        "drim(a)\n"
-        "wake(a)";
+        "drim(a12)\n"
+        "wake(a12)\n"
+        "b = 12 // This is a comment\n"
+        "drim(b)\n"
+        "wake(b)\n"
+        "wake(a12)";
 
     std::cout << "Raw Source Code:\n"
               << sourceCode << "\n\n";
