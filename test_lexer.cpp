@@ -4,7 +4,7 @@
 
 int main()
 {
-    // Your code snippet
+
     std::string sourceCode =
         "a12 = 10 // This is a comment\n"
         "drim(a)\n"
