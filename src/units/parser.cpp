@@ -75,6 +75,7 @@ void Parser::parse()
                 std::cout << memory[varName] << std::endl;
             } else {
                 std::cerr << "Runtime Error: At Line: " << currentToken.line_number << " Variable '" << varName << "' is undefined." << std::endl;
+                exit(1);
             }
         }
         else
