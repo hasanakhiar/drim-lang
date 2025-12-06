@@ -21,7 +21,11 @@ int Lexer::getLineNumber() const {
     return line_number;
 }
 
-Lexer::Lexer(std::string source) : src(source), pos(0), line_number(1)
+int Lexer::getCharPositionInLine() const {
+    return char_position_in_line;
+}
+
+Lexer::Lexer(std::string source) : src(source), pos(0), line_number(1), char_position_in_line(1)
 {
     if (!src.empty())
         current_char = src[0];
@@ -33,7 +37,11 @@ Lexer::Lexer(std::string source) : src(source), pos(0), line_number(1)
 void Lexer::advance()
 {
     pos++;
-    if (current_char == '\n') line_number++;
+    char_position_in_line++;
+    if (current_char == '\n') {
+        line_number++;
+        char_position_in_line = 1;
+    }
     if (pos < src.length())
         current_char = src[pos];
     else
@@ -64,8 +72,8 @@ Token Lexer::collectIdentifier()
         res += current_char;
         advance();
     }
-    if (res == "drim") return {TOKEN_DRIM, res, getLineNumber()};
-    if (res == "wake") return {TOKEN_WAKE, res, getLineNumber()};
+    if (res == "drim") return {TOKEN_DRIM, res, getLineNumber(), getCharPositionInLine()};
+    if (res == "wake") return {TOKEN_WAKE, res, getLineNumber(), getCharPositionInLine()};
     return {TOKEN_ID, res};
 }
 
@@ -77,7 +85,7 @@ Token Lexer::collectNumber()
         res += current_char;
         advance();
     }
-    return {TOKEN_INT, res, getLineNumber()};
+    return {TOKEN_INT, res, getLineNumber(), getCharPositionInLine()};
 }
 
 Token Lexer::getNextToken()
@@ -96,14 +104,14 @@ Token Lexer::getNextToken()
         if (isdigit(current_char)) return collectNumber();
         if (isalpha(current_char)) return collectIdentifier();
 
-        if (current_char == '=') { advance(); return {TOKEN_ASSIGN, "=", getLineNumber()}; }
-        if (current_char == '(') { advance(); return {TOKEN_LPAREN, "(", getLineNumber()}; }
-        if (current_char == ')') { advance(); return {TOKEN_RPAREN, ")", getLineNumber()}; }
+        if (current_char == '=') { advance(); return {TOKEN_ASSIGN, "=", getLineNumber(), getCharPositionInLine()}; }
+        if (current_char == '(') { advance(); return {TOKEN_LPAREN, "(", getLineNumber(), getCharPositionInLine()}; }
+        if (current_char == ')') { advance(); return {TOKEN_RPAREN, ")", getLineNumber(), getCharPositionInLine()}; }
 
-        std::cerr << "Unexpected character: " << current_char  << " At Line: " << getLineNumber() << std::endl;
+        std::cerr << "Unexpected character: " << current_char  << " At: " << getLineNumber() << ":" << getCharPositionInLine() << std::endl;
         exit(1);
     }
-    return {TOKEN_EOF, "", getLineNumber()};
+    return {TOKEN_EOF, "", getLineNumber(), getCharPositionInLine()};
 }
 
 

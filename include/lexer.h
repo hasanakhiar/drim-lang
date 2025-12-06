@@ -23,6 +23,7 @@ struct Token
     TokenType type;
     std::string value;
     int line_number;
+    int char_position_in_line;
 };
 
 class Lexer
@@ -32,6 +33,7 @@ private:
     size_t pos;
     int line_number;
     char current_char;
+    int char_position_in_line;
 
     void advance();
     void skipWhitespace();
@@ -43,6 +45,7 @@ public:
     Lexer(std::string source);
     Token getNextToken();
     int getLineNumber() const;
+    int getCharPositionInLine() const;
 };
 
 #endif //DRIM_LANG_LEXER_H

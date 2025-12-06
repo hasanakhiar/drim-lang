@@ -1,7 +1,7 @@
 //Initialize variable
-a = 54
-wake(c)
-wake(4)
+a = 2
+
+wake(+)
 
 drim(b)
 wake(b)

@@ -17,7 +17,7 @@ void Parser::consume_token(TokenType type)
     }
     else
     {
-        std::cerr << "Syntax Error: At Line " << currentToken.line_number << " Expected token type " << tokenTypeToString(type)
+        std::cerr << "Syntax Error: At: " << currentToken.line_number << ":" << currentToken.char_position_in_line + 1 << " Expected token type " << tokenTypeToString(type)
                   << " but got type " << tokenTypeToString(currentToken.type) << std::endl;
         exit(1);
     }
@@ -74,13 +74,13 @@ void Parser::parse()
             if (memory.find(varName) != memory.end()) {
                 std::cout << memory[varName] << std::endl;
             } else {
-                std::cerr << "Runtime Error: At Line: " << currentToken.line_number << " Variable '" << varName << "' is undefined." << std::endl;
+                std::cerr << "Runtime Error: At: " << currentToken.line_number << ":" << currentToken.char_position_in_line + 1 << " Variable '" << varName << "' is undefined." << std::endl;
                 exit(1);
             }
         }
         else
         {
-            std::cerr << "Syntax Error: Unexpected token At Line: "<< currentToken.line_number << " " << tokenTypeToString(currentToken.type) << std::endl;
+            std::cerr << "Syntax Error: Unexpected token At: " << currentToken.line_number << ":" << currentToken.char_position_in_line + 1 << " " << tokenTypeToString(currentToken.type) << std::endl;
             exit(1);
         }
     }
