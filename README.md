@@ -23,8 +23,8 @@ wake(a)
 wake(42)
 
 // Get user input
-drim(myVar)
-wake(myVar)
+drim(a)
+wake(a)
 ```
 
 ### Keywords
