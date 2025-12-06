@@ -5,12 +5,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-
 bool isDigit(char c);
-
 bool isAlpha(char c);
-
-
 bool isAlphaNumeric(char c);
 
 #endif

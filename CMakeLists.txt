@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 4.0)
-project(drim_lang C)
+project(drim_lang)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
-include_directories(.)
 include_directories(include)
 
-add_executable(drim_lang
-        include/Token.h
-        include/Token.h
-        include/Lexer.h
+
+set(SOURCES
+        test/Lexer.cpp
         src/Lexer.cpp
-        include/Utils.h
-        src/Utils.cpp)
+        src/Utils.cpp
+)
+
+add_executable(test_lexer ${SOURCES})
