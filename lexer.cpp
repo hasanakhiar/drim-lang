@@ -154,7 +154,7 @@ public:
                 return collectNumber();
             }
 
-            // handle identifiers and keywords
+            // handle identifiers and keywords (can only have int and alpha rn)
             if (isalpha(current_char))
             {
                 return collectIdentifier();
