@@ -113,7 +113,19 @@ The primary goal of the project is to create a functional programming environmen
 
 \newpage
 \section{Motivation Behind the Project}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+The motivation behind developing the Drim programming language is twofold: preserving classroom culture and mastering complex software engineering concepts.
+\subsection*{Cultural Significance}
+The name "Drim" originated as an inside joke and a shared meme within the student batch. Rather than letting this remain a fleeting concept, we decided to immortalize it by building a tangible software tool. This decision transforms the abstract nature of coding assignments into a personalized project where the syntax and keywords (such as drimming for loops) reflect the team’s unique personality. This connection increases developer engagement and passion for the project.
+\subsection*{Engineering Challenges}
+From a technical perspective, this project serves as a rigorous exercise in system-level programming. We chose to build an interpreter from scratch to accomplish three specific learning outcomes:
+\begin{itemize}
+    \item \textbf{Deep Understanding of Language Design:} By manually implementing lexical analysis, parsing, and interpretation, we gain firsthand experience with the inner workings of programming languages.
+    \item \textbf{Memory Management Proficiency:} The project requires careful handling of dynamic memory allocation and deallocation, fostering a strong grasp of pointers and resource management in C++.
+    \item \textbf{Problem-Solving Skills:} Overcoming the constraints of not using third-party libraries or certain STL functions challenges us to devise innovative solutions for common programming tasks.
+    \item \textbf{Collaboration and Project Management:} Working as a group on a complex software project enhances teamwork, version control practices, and project planning skills.
+\end{itemize}
+
+
 
 \newpage
 \section{User Requirement}
@@ -136,7 +148,20 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 
 \newpage
 \section{Key Feature}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+The Drim language includes a set of custom features designed to balance simplicity with robust logic execution.
+These features highlight the capabilities of the custom-built Tree-Walk Interpreter.\\ 
+\begin{itemize}
+    \item \textbf{Custom Syntax \& Semantics:} The language utilizes a unique set of keywords tailored to the project's theme. Notable examples include the \texttt{drimming}
+                                                command for iterative loops and the \texttt{wake()} function for standard output. 
+                                                This custom syntax demonstrates the flexibility of the Lexer design.
+    \item \textbf{String Interpolation:} Unlike many basic custom languages that only supports simple stgring printing,
+                                         Drim supports advanced intercpolation. Users can embed variables directly within string literals (e.g., \texttt{wake("Value: {x})}),
+                                         allowing for dyunamic and readable output generation. 
+    \item \textbf{Dynamic Typing:} Variables in \textbf{Drim} can hold either String or Integer values, with implicit type casting handled by the interpreter. 
+                                    This feature simplifies variable management and enhances user experience.
+    \item \textbf{Headless Execution:} Designed specifically as a backend tool, Drim runs as a lightweight, headless Command Line Interface (CLI) application. It executes scripts directly in the terminal without the overhead of a Graphical User Interface (GUI), meeting the requirement for high-performance logic processing.
+    \item \textbf{Zero-Dependency Architecture:} A defining feature of Drim is its independence. It does not rely on third-party parsing libraries or heavy standard library tools (such as Regex). Every component, from tokenization to the Abstract Syntax Tree (AST) construction, is engineered manually using C++ 17.
+\end{itemize}
 
 \newpage
 \section{Flow Chart/Class Diagram}
@@ -174,10 +199,10 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 
 \begin{figure}[!h]
     \centering
-    % NOTE: Ensure 'timeline Diagram.png' is in the same directory or provide the correct path.
-    \includegraphics[width=1\linewidth]{images/timeline.jpeg}
+    \includegraphics[width=1\linewidth]{images/timeline-2.png}
     \caption{Timeline Diagram (Gantt Chart)}
     \label{fig:timeline}
+    
 \end{figure}
 
 \newpage
