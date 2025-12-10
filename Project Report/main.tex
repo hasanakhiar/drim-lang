@@ -1,0 +1,205 @@
+% !TeX program = xelatex
+\documentclass[12pt, a4paper]{article}
+
+% --- Essential Packages ---
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{lastpage}
+
+% --- For Fonts and Language Support (Essential for modern TeX) ---
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\usepackage[math-style=ISO]{unicode-math}
+
+% --- For Colors, Tables, and Advanced Text Formatting ---
+\usepackage[table, xcdraw]{xcolor}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{multirow}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{enumerate}
+\usepackage[shortlabels]{enumitem}
+
+% --- For Code Listings, Algorithms, and Diagrams ---
+\usepackage{minted}
+\usepackage[linesnumbered, ruled, vlined]{algorithm2e}
+\usepackage{subcaption}
+
+% --- For Hyperlinks and Document Structure ---
+\usepackage{fancyhdr}
+\usepackage[colorlinks, urlbordercolor=blue]{hyperref} 
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,
+    urlcolor=black,
+}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+
+% Define header
+\fancyhead[L]{SWE 4304: Software Project Lab I}
+\fancyhead[C]{}
+\fancyhead[R]{Project Report (Group 7)}
+
+% Define footer
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[L]{}
+\fancyfoot[C]{Page \thepage\ of \pageref{LastPage}}
+\fancyfoot[R]{}
+
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{figure}[!h]
+    \centering
+    \includegraphics[width=.2\textwidth]{images/iut_logo.png}
+\end{figure}
+\begin{center}
+
+\noindent\rule{\textwidth}{1.5pt}
+
+\Huge{\textbf{Islamic University of Technology}}\\
+\large{\textbf{Department of Computer Science and Engineering (CSE)}}\\
+\large{{B.Sc. in Software Engineering}}\\
+\vspace{0.2cm}
+\Large{\textbf{SWE 4304:} Software Project Lab I}\\
+\Large{{Winter}, 2024-2025}\\
+\noindent\rule{\textwidth}{0.5pt}
+
+\vspace{1cm}
+\Large{\textbf{Project Report}} \\
+\Large{{The ‘Drim’ Programming Language}} \\
+\vspace{1cm}
+
+\vspace{0.5cm}
+\large{\textbf{Group 7}} \\
+\large{Md. Muntahi Hasan Akhiar, 230042118}\\
+\large{S.M. Tahsinuzzaman Emon, 230042104}\\
+\large{Tamim Mahrush Naser, 230042133}\\
+
+\vspace{1.5cm}
+\large{\textbf{Supervisor}} \\
+\large{Farzana Tabassum,\\ Lecturer, CSE}\\
+
+\vspace{1.5cm}
+\large{{Date: December 13, 2025}} \\
+
+\end{center}
+\end{titlepage}
+
+\newpage
+
+% --- Table of Contents ---
+\tableofcontents
+
+\newpage
+
+\begin{center}
+    \Large{\textbf{The ‘Drim’ Programming Language}}
+\end{center}
+
+\section{Project Overview}
+\textbf{``Drim''} is a custom-built, interpreted programming language designed to run as a lightweight, headless command-line interface (CLI) application. Unlike standard compilers that translate source code into machine code, Drim functions as a \textbf{Tree-Walk Interpreter} that reads custom \texttt{.drim} source files, constructs an internal Abstract Syntax Tree (AST), and executes logic in real-time.
+
+The project is built entirely from scratch using \textbf{C++ (Standard 17)}, adhering to strict constraints that prohibit the use of external parsing libraries (like Lex or Yacc) or heavy standard library functions (like \texttt{std::stoi} or Regex). This ensures that every component of the language pipeline—from lexical analysis to memory management—is engineered manually by the team.
+
+The primary goal of the project is to create a functional programming environment that supports dynamic typing, mathematical operations, and custom control flow structures (such as \texttt{drimming} for loops and \texttt{wake} for output), providing a simplified yet robust platform for logic execution.
+
+\newpage
+\section{Motivation Behind the Project}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+\newpage
+\section{User Requirement}
+\subsection*{Functional Requirements}
+\begin{itemize}
+    \item \textbf{Input/Output:} The system must accept user input via the \texttt{drim()} command and display formatted output using the \texttt{wake()} command.
+    \item \textbf{Variable Management:} Users must be able to declare variables, assign values, and update them dynamically. The system must support implicit type casting between Strings and Integers.
+    \item \textbf{Mathematical Operations:} The interpreter must correctly evaluate arithmetic expressions (\texttt{+}, \texttt{-}, \texttt{*}, \texttt{/}, \texttt{\%}) respecting standard operator precedence.
+    \item \textbf{Control Flow:} The language must support conditional logic (\texttt{if/else}) and iterative loops (\texttt{drimming}) to execute repetitive tasks.
+    \item \textbf{Script Execution:} The application must be able to read a text file with the \texttt{.drim} extension and execute the code contained within.
+\end{itemize}
+
+\subsection*{Non-Functional Requirements}
+\begin{itemize}
+    \item \textbf{Headless Application:} The system must run entirely in the terminal (CLI) without a graphical user interface.
+    \item \textbf{Performance:} The interpreter should parse and execute commands with minimal latency for standard script sizes.
+    \item \textbf{Portability:} The source code should be cross-platform, compilable on Windows, macOS, and Linux using CMake.
+    \item \textbf{Independence:} The implementation must not rely on any third-party parsing libraries or forbidden STL functions.
+\end{itemize}
+
+\newpage
+\section{Key Feature}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+\newpage
+\section{Flow Chart/Class Diagram}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.6\linewidth]{images/flowchart.png}
+    \caption{System Architecture Flow: From Source Code to Execution}
+    \label{fig:flowchart}
+\end{figure}
+\newpage
+\subsection*{Process Description}
+\begin{enumerate}
+    \item \textbf{Source Code (.drim):} The raw text file provided by the user containing the custom script.
+    \item \textbf{Lexer (Tokenizer):} Scans the source code character-by-character to generate a sequence of \textbf{Tokens} (Keywords, Identifiers, Literals).
+    \item \textbf{Parser:} Analyzes the token sequence against the language grammar rules. It constructs an \textbf{Abstract Syntax Tree (AST)} composed of Statement and Expression nodes.
+    \item \textbf{Interpreter:} Traverses the AST recursively. It executes Statements (actions) and evaluates Expressions (values), interacting with the \textbf{Environment} (Memory) to store and retrieve variable states.
+    \item \textbf{Output:} The result of the execution is printed to the standard output (Console).
+\end{enumerate}
+
+
+
+\newpage
+\section{Tools and Technologies}
+\begin{itemize}
+    \item \textbf{Programming Language:} C++ (Standard 17) - Chosen for performance and manual memory control.
+    \item \textbf{Build System:} CMake - Used to manage the build process and ensure cross-platform compatibility.
+    \item \textbf{Version Control:} Git \& GitHub - Used for source code management, branching, and collaboration.
+    \item \textbf{IDE:} CLion / Visual Studio Code - Primary development environments.
+    \item \textbf{Diagramming:} Mermaid.js / Gamma - Used for creating Gantt charts and architecture diagrams.
+\end{itemize}
+
+\newpage
+\section{Proposed Timeline}
+
+\begin{figure}[!h]
+    \centering
+    % NOTE: Ensure 'timeline Diagram.png' is in the same directory or provide the correct path.
+    \includegraphics[width=1\linewidth]{images/timeline.jpeg}
+    \caption{Timeline Diagram (Gantt Chart)}
+    \label{fig:timeline}
+\end{figure}
+
+\newpage
+\section{Suggestions Received}
+The suggestions that we received are -
+
+\begin{itemize}
+    \item \textbf{Suggestion 1:}
+    Details about suggestion 1 and how it will be addressed.
+    \item \textbf{Suggestion 2:}
+    Details about suggestion 2 and how it will be addressed.
+
+\end{itemize}
+
+\newpage
+\section{Links}
+
+\begin{enumerate}
+
+    \item \href{(link)}{Presentation Slide Link}
+    \item \href{https://github.com/hasanakhiar/drim-lang}{GitHub Repository Link}
+\end{enumerate}
+
+\newpage
+\end{document}
