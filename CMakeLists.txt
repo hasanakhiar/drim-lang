@@ -7,9 +7,11 @@ include_directories(include)
 
 
 set(SOURCES
-        test/Lexer.cpp
-        src/Lexer.cpp
         src/Utils.cpp
+        src/Lexer.cpp
+        src/Parser.cpp
+        src/Interpreter.cpp
+        src/Main.cpp
 )
 
-add_executable(test_lexer ${SOURCES})
+add_executable(test ${SOURCES})
