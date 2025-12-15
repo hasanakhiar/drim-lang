@@ -72,8 +72,8 @@ Token Lexer::collectIdentifier()
         res += current_char;
         advance();
     }
-    if (res == "drim") return {TOKEN_DRIM, res, getLineNumber(), getCharPositionInLine()};
-    if (res == "wake") return {TOKEN_WAKE, res, getLineNumber(), getCharPositionInLine()};
+    if (res == "drimIn") return {TOKEN_DRIM, res, getLineNumber(), getCharPositionInLine()};
+    if (res == "wakeOut") return {TOKEN_WAKE, res, getLineNumber(), getCharPositionInLine()};
     return {TOKEN_ID, res};
 }
 

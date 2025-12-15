@@ -1,7 +1,7 @@
 //Initialize variable
 a = 2
 
-wake(+)
+wakeOut(a)
 
-drim(b)
-wake(b)
+drimIn(b)
+wakeOut(b)

@@ -3,21 +3,24 @@
 #define DRIM_LANG_PARSER_H
 
 #include "lexer.h"
-#include <map>
-#include <string>
+#include "ast.h"
+#include <memory>
 
 class Parser
 {
 private:
     Lexer lexer;
     Token currentToken;
-    std::map<std::string, int> memory;
 
     void consume_token(TokenType type);
 
+    // Helper methods to build specific parts of the tree
+    std::unique_ptr<Statement> parseStatement();
+    std::unique_ptr<Expression> parseExpression();
+
 public:
     Parser(Lexer l);
-    void parse();
+    std::unique_ptr<Program> parse();
 };
 
 #endif //DRIM_LANG_PARSER_H
