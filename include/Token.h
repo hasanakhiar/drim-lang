@@ -12,6 +12,12 @@ enum TokenType {
     KW_WAKE,    // Output
 
 
+    // Math Operators
+    TOKEN_PLUS,     // +
+    TOKEN_MINUS,    // -
+    TOKEN_STAR,     // *
+    TOKEN_SLASH,    // /
+
     TOKEN_IDENTIFIER, // Variable
     TOKEN_STRING,     // "hello"
     TOKEN_INT,        // 123
