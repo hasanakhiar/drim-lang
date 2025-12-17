@@ -1,5 +1,5 @@
 x = 10
 y = 5
-wake(x + y * 2) 
-drim(z)
-wake(z + 100)
+wakeOut(x + y * 2)
+drimIn(z)
+wakeOut(z + 100)
