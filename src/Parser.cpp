@@ -1,6 +1,3 @@
-//
-// Created by Muntahi Hasan Akhiar on 6/12/25.
-//
 #include "../include/Parser.h"
 #include <iostream>
 
@@ -23,74 +20,99 @@ Token Parser::consume(TokenType type, std::string message) {
     exit(1);
 }
 
-// === MAIN PARSE LOGIC ===
+// NEW HELPER
+bool Parser::isAtEnd() {
+    return peek().type == TOKEN_EOF;
+}
+
+bool Parser::check(TokenType type) {
+    if (isAtEnd()) return false;
+    return peek().type == type;
+}
+
+
+// === EXPRESSION PARSING (Lowest Priority: + -) ===
+std::shared_ptr<Expr> Parser::expression() {
+    std::shared_ptr<Expr> expr = term();
+
+    while (check(TOKEN_PLUS) || check(TOKEN_MINUS)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = term();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+
+    return expr;
+}
+
+// === TERM PARSING (Higher Priority: * /) ===
+std::shared_ptr<Expr> Parser::term() {
+    std::shared_ptr<Expr> expr = primary();
+
+    while (check(TOKEN_STAR) || check(TOKEN_SLASH)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = primary();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+
+    return expr;
+}
+
+// === PRIMARY PARSING (Highest Priority: literals, vars, parens) ===
+std::shared_ptr<Expr> Parser::primary() {
+    if (check(TOKEN_INT) || check(TOKEN_STRING)) {
+        Token t = advance();
+        return std::make_shared<LiteralExpr>(t.lexeme);
+    }
+
+    if (check(TOKEN_IDENTIFIER)) {
+        return std::make_shared<VariableExpr>(advance());
+    }
+
+    if (check(TOKEN_LPAREN)) {
+        advance();
+        std::shared_ptr<Expr> expr = expression();
+        consume(TOKEN_RPAREN, "Expect ')' after expression.");
+        return expr;
+    }
+
+    std::cerr << "Error: Expect expression on line " << peek().line << "\n";
+    exit(1);
+}
+
+// === MAIN PARSE LOGIC UPDATED ===
 std::vector<std::shared_ptr<Stmt>> Parser::parse() {
     std::vector<std::shared_ptr<Stmt>> commands;
 
     while (peek().type != TOKEN_EOF) {
 
-        //  Handle Input: drim(var)
         if (peek().type == KW_DRIM) {
-            advance(); // Eat 'drim'
-            consume(TOKEN_LPAREN, "Expect '(' after drim");
-            Token varName = consume(TOKEN_IDENTIFIER, "Expect variable name");
-            consume(TOKEN_RPAREN, "Expect ')' after variable");
-
+            advance();
+            consume(TOKEN_LPAREN, "Expect '('");
+            Token varName = consume(TOKEN_IDENTIFIER, "Expect var name");
+            consume(TOKEN_RPAREN, "Expect ')'");
             commands.push_back(std::make_shared<InputStmt>(varName));
         }
-
-        //  Handle Output: wake(value)
         else if (peek().type == KW_WAKE) {
-            advance(); // Eat 'wake'
-            consume(TOKEN_LPAREN, "Expect '(' after wake");
+            advance();
+            consume(TOKEN_LPAREN, "Expect '('");
 
-            std::shared_ptr<Expr> valueToPrint;
+            // NOW WE PARSE A FULL EXPRESSION, NOT JUST A LITERAL
+            std::shared_ptr<Expr> value = expression();
 
-            // Checking for string literal
-            if (peek().type == TOKEN_STRING) {
-                valueToPrint = std::make_shared<LiteralExpr>(peek().lexeme);
-                advance();
-            }
-            // Checking for variable
-            else if (peek().type == TOKEN_IDENTIFIER) {
-                valueToPrint = std::make_shared<VariableExpr>(peek());
-                advance();
-            }
-            // Checking for number
-            else if (peek().type == TOKEN_INT) {
-                valueToPrint = std::make_shared<LiteralExpr>(peek().lexeme);
-                advance();
-            }
-
-            consume(TOKEN_RPAREN, "Expect ')' after value");
-            commands.push_back(std::make_shared<PrintStmt>(valueToPrint));
+            consume(TOKEN_RPAREN, "Expect ')'");
+            commands.push_back(std::make_shared<PrintStmt>(value));
         }
-
-        // Handle Assignment: var = value
-        // Is it "NAME =" ?
         else if (peek().type == TOKEN_IDENTIFIER &&
-                 (current + 1 < tokens.size() && tokens[current + 1].type == TOKEN_ASSIGN)) {
-            Token varName = advance(); // consume name
-            advance(); // consume '='
+                (current + 1 < tokens.size() && tokens[current+1].type == TOKEN_ASSIGN)) {
 
-            std::shared_ptr<Expr> valueToSave;
+            Token varName = advance();
+            advance(); // Eat '='
 
-            if (peek().type == TOKEN_STRING) {
-                valueToSave = std::make_shared<LiteralExpr>(peek().lexeme);
-                advance();
-            }
-            else if (peek().type == TOKEN_INT) {
-                valueToSave = std::make_shared<LiteralExpr>(peek().lexeme);
-                advance();
-            }
-            else if (peek().type == TOKEN_IDENTIFIER) {
-                valueToSave = std::make_shared<VariableExpr>(peek());
-                advance();
-            }
+            // NOW WE PARSE A FULL EXPRESSION
+            std::shared_ptr<Expr> value = expression();
 
-            commands.push_back(std::make_shared<AssignStmt>(varName, valueToSave));
+            commands.push_back(std::make_shared<AssignStmt>(varName, value));
         }
-        // Skip unknown tokens for now
         else {
             advance();
         }
