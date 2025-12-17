@@ -1,4 +1,5 @@
-a = 10
-wake(a)
-drim(b)
-wake(b)
+x = 10
+y = 5
+wake(x + y * 2) 
+drim(z)
+wake(z + 100)
