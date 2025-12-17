@@ -23,6 +23,16 @@ public:
     std::vector<std::shared_ptr<Stmt>> parse();
 
 private:
+    bool isAtEnd();
+    // Helper to check token type without consuming
+    bool check(TokenType type);
+
+    // Hierarchy of expression parsing
+    std::shared_ptr<Expr> expression(); // Handles + and -
+    std::shared_ptr<Expr> term();       // Handles * and /
+    std::shared_ptr<Expr> primary();    // Handles numbers, vars, ( )
+
+
     // Check current token
     Token peek();
 
