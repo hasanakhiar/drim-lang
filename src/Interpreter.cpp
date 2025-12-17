@@ -1,53 +1,80 @@
-//
-// Created by Muntahi Hasan Akhiar on 6/12/25.
-//
-
 #include "../include/Interpreter.h"
 #include <iostream>
+#include <string>
+
+// Helper to check if a string is a number
+bool isNumber(const std::string& s) {
+    if(s.empty()) return false;
+    for (char c : s) {
+        if (!isdigit(c)) return false;
+    }
+    return true;
+}
+
+std::string Interpreter::evaluate(std::shared_ptr<Expr> expr) {
+    // 1. Literal (10, "hello")
+    if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(expr)) {
+        return lit->value;
+    }
+
+    // 2. Variable (x)
+    if (auto var = std::dynamic_pointer_cast<VariableExpr>(expr)) {
+        if (memory.count(var->name.lexeme)) {
+            return memory[var->name.lexeme];
+        }
+        std::cerr << "Runtime Error: Undefined variable '" << var->name.lexeme << "'\n";
+        exit(1);
+    }
+
+    // 3. Binary Math (1 + 2)
+    if (auto bin = std::dynamic_pointer_cast<BinaryExpr>(expr)) {
+        std::string leftVal = evaluate(bin->left);
+        std::string rightVal = evaluate(bin->right);
+
+        // Check if both are numbers for Math
+        if (isNumber(leftVal) && isNumber(rightVal)) {
+            int l = std::stoi(leftVal);
+            int r = std::stoi(rightVal);
+
+            if (bin->op.type == TOKEN_PLUS) return std::to_string(l + r);
+            if (bin->op.type == TOKEN_MINUS) return std::to_string(l - r);
+            if (bin->op.type == TOKEN_STAR) return std::to_string(l * r);
+            if (bin->op.type == TOKEN_SLASH) {
+                if(r == 0) { std::cerr << "Runtime Error: Division by zero\n"; exit(1); }
+                return std::to_string(l / r);
+            }
+        }
+
+        // String Concatenation (if using +)
+        if (bin->op.type == TOKEN_PLUS) {
+            return leftVal + rightVal;
+        }
+
+        std::cerr << "Runtime Error: Invalid operation on non-numbers\n";
+        exit(1);
+    }
+
+    return "";
+}
 
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
     for (auto cmd : commands) {
 
-        // --- EXECUTE INPUT (drim) ---
         if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
-            std::cout << "drim input " << input->name.lexeme << ": "; // Optional
+            // std::cout << "drim input " << input->name.lexeme << ": ";
             if (std::getline(std::cin, userText)) {
                 memory[input->name.lexeme] = userText;
             }
         }
-
-        // --- EXECUTE ASSIGNMENT (var = val) ---
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
-            std::string valToStore = "";
-
-            if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(assign->value)) {
-                valToStore = lit->value;
-            }
-            else if (auto var = std::dynamic_pointer_cast<VariableExpr>(assign->value)) {
-                if (memory.count(var->name.lexeme)) {
-                    valToStore = memory[var->name.lexeme];
-                }
-            }
-
-            memory[assign->name.lexeme] = valToStore;
+            // Use the new evaluate function!
+            std::string val = evaluate(assign->value);
+            memory[assign->name.lexeme] = val;
         }
-
-        // --- EXECUTE PRINT (wake) ---
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
-            std::string output = "null";
-
-            // If printing a literal string
-            if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(print->expression)) {
-                output = lit->value;
-            }
-            // If printing a variable
-            else if (auto var = std::dynamic_pointer_cast<VariableExpr>(print->expression)) {
-                if (memory.count(var->name.lexeme)) {
-                    output = memory[var->name.lexeme];
-                }
-            }
-
+            // Use the new evaluate function!
+            std::string output = evaluate(print->expression);
             std::cout << output << "\n";
         }
     }
