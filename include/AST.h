@@ -38,6 +38,16 @@ struct VariableExpr : Expr {
     VariableExpr(Token n) : name(n) {}
 };
 
+// Represents Math: 1 + 2, a * b
+struct BinaryExpr : Expr {
+    std::shared_ptr<Expr> left;
+    Token op; // The operator (+, -, *, /)
+    std::shared_ptr<Expr> right;
+
+    BinaryExpr(std::shared_ptr<Expr> l, Token o, std::shared_ptr<Expr> r)
+        : left(l), op(o), right(r) {}
+};
+
 
 // 3. The Commands (Statements)
 
