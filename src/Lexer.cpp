@@ -22,6 +22,13 @@ void Lexer::scanToken() {
         case '=': addToken(TOKEN_ASSIGN); break;
 
 
+        // NEW: Math Operators
+        case '+': addToken(TOKEN_PLUS); break;
+        case '-': addToken(TOKEN_MINUS); break;
+        case '*': addToken(TOKEN_STAR); break;
+        case '/': addToken(TOKEN_SLASH); break;
+
+
         case ' ':
         case '\r':
         case '\t': break;
