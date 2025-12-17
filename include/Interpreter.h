@@ -18,6 +18,9 @@ class Interpreter {
 public:
     // Function for executing commands
     void interpret(std::vector<std::shared_ptr<Stmt>> commands);
+
+    // Helper to evaluate Math/Strings and return the result string
+    std::string evaluate(std::shared_ptr<Expr> expr);
 };
 
 #endif
