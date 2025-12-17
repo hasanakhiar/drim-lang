@@ -48,8 +48,8 @@ void Lexer::identifier() {
     std::string text = source.substr(start, current - start);
 
     TokenType type = TOKEN_IDENTIFIER;
-    if (text == "drim") type = KW_DRIM;
-    if (text == "wake") type = KW_WAKE;
+    if (text == "drimIn") type = KW_DRIM;
+    if (text == "wakeOut") type = KW_WAKE;
 
     addToken(type);
 }
