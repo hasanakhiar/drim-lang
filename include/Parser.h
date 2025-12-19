@@ -30,6 +30,7 @@ private:
     // Hierarchy of expression parsing
     std::shared_ptr<Expr> expression(); // Handles + and -
     std::shared_ptr<Expr> term();       // Handles * and /
+    std::shared_ptr<Expr> power();      // Handles ^
     std::shared_ptr<Expr> primary();    // Handles numbers, vars, ( )
 
 

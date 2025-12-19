@@ -17,6 +17,7 @@ enum TokenType {
     TOKEN_MINUS,    // -
     TOKEN_STAR,     // *
     TOKEN_SLASH,    // /
+    TOKEN_POW,      // ^
 
     TOKEN_IDENTIFIER, // Variable
     TOKEN_STRING,     // "hello"

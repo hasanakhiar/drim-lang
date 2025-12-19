@@ -27,6 +27,7 @@ void Lexer::scanToken() {
         case '-': addToken(TOKEN_MINUS); break;
         case '*': addToken(TOKEN_STAR); break;
         case '/': addToken(TOKEN_SLASH); break;
+        case '^': addToken(TOKEN_POW); break;
 
 
         case ' ':

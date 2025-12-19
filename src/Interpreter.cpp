@@ -1,6 +1,8 @@
 #include "../include/Interpreter.h"
 #include <iostream>
 #include <string>
+#include <cmath>
+
 
 // Helper to check if a string is a number
 bool isNumber(const std::string& s) {
@@ -43,6 +45,7 @@ std::string Interpreter::evaluate(std::shared_ptr<Expr> expr) {
                 if(r == 0) { std::cerr << "Runtime Error: Division by zero\n"; exit(1); }
                 return std::to_string(l / r);
             }
+            if (bin->op.type == TOKEN_POW) return std::to_string((int)pow(l, r));
         }
 
         // String Concatenation (if using +)

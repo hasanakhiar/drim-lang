@@ -46,11 +46,24 @@ std::shared_ptr<Expr> Parser::expression() {
 
 // === TERM PARSING (Higher Priority: * /) ===
 std::shared_ptr<Expr> Parser::term() {
-    std::shared_ptr<Expr> expr = primary();
+    std::shared_ptr<Expr> expr = power();
 
     while (check(TOKEN_STAR) || check(TOKEN_SLASH)) {
         Token op = advance();
-        std::shared_ptr<Expr> right = primary();
+        std::shared_ptr<Expr> right = power();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+
+    return expr;
+}
+
+// === POWER PARSING (Right-associative) ===
+std::shared_ptr<Expr> Parser::power() {
+    std::shared_ptr<Expr> expr = primary();
+
+    while (check(TOKEN_POW)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = power();
         expr = std::make_shared<BinaryExpr>(expr, op, right);
     }
 

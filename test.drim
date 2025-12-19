@@ -1,5 +1,4 @@
-x = 10
-y = 5
-wakeOut(x + y * 2)
-drimIn(z)
-wakeOut(z + 100)
+a = 2
+b = 3
+
+wakeOut(b ^ a)
