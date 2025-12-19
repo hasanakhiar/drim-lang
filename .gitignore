@@ -41,3 +41,8 @@
 # debug information files
 *.dwo
 /.idea/
+
+
+# extra
+*.iml
+*.xml
