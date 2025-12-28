@@ -1,4 +1,18 @@
 a = 10
 wake(a)
-drim(b)
+
+b = kgToLbs(10)
+wake("10 kg in lbs:")
 wake(b)
+
+c = kmToMiles(5)
+wake("5 km in miles:")
+wake(c)
+
+d = joulesToCal(100)
+wake("100 joules in calories:")
+wake(d)
+
+e = cToF(0)
+wake("0 celsius in fahrenheit:")
+wake(e)

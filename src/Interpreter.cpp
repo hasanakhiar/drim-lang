@@ -4,6 +4,48 @@
 
 #include "../include/Interpreter.h"
 #include <iostream>
+#include <string>
+
+std::string Interpreter::evaluate(std::shared_ptr<Expr> expr) {
+    if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(expr)) {
+        return lit->value;
+    }
+    else if (auto var = std::dynamic_pointer_cast<VariableExpr>(expr)) {
+        if (memory.count(var->name.lexeme)) {
+            return memory[var->name.lexeme];
+        }
+        return "null";
+    }
+    else if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
+        std::string funcName = call->callee.lexeme;
+        std::string argVal = evaluate(call->argument);
+        
+        try {
+            double val = std::stof(argVal);
+            
+            // Mass
+            if (funcName == "kgToLbs") return std::to_string(val * 2.20462);
+            if (funcName == "lbsToKg") return std::to_string(val / 2.20462);
+            
+            // Distance
+            if (funcName == "kmToMiles") return std::to_string(val * 0.621371);
+            if (funcName == "milesToKm") return std::to_string(val / 0.621371);
+            
+            // Energy
+            if (funcName == "joulesToCal") return std::to_string(val * 0.239006);
+            if (funcName == "calToJoules") return std::to_string(val / 0.239006);
+
+            // Temperature
+            if (funcName == "cToF") return std::to_string((val * 9.0/5.0) + 32.0);
+            if (funcName == "fToC") return std::to_string((val - 32.0) * 5.0/9.0);
+
+        } catch (...) {
+            return "error: invalid argument for " + funcName;
+        }
+        return "error: unknown function " + funcName;
+    }
+    return "null";
+}
 
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
     for (auto cmd : commands) {
@@ -19,36 +61,12 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
 
         // --- EXECUTE ASSIGNMENT (var = val) ---
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
-            std::string valToStore = "";
-
-            if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(assign->value)) {
-                valToStore = lit->value;
-            }
-            else if (auto var = std::dynamic_pointer_cast<VariableExpr>(assign->value)) {
-                if (memory.count(var->name.lexeme)) {
-                    valToStore = memory[var->name.lexeme];
-                }
-            }
-
-            memory[assign->name.lexeme] = valToStore;
+            memory[assign->name.lexeme] = evaluate(assign->value);
         }
 
         // --- EXECUTE PRINT (wake) ---
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
-            std::string output = "null";
-
-            // If printing a literal string
-            if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(print->expression)) {
-                output = lit->value;
-            }
-            // If printing a variable
-            else if (auto var = std::dynamic_pointer_cast<VariableExpr>(print->expression)) {
-                if (memory.count(var->name.lexeme)) {
-                    output = memory[var->name.lexeme];
-                }
-            }
-
-            std::cout << output << "\n";
+            std::cout << evaluate(print->expression) << "\n";
         }
     }
 }

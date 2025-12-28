@@ -23,6 +23,8 @@ public:
     std::vector<std::shared_ptr<Stmt>> parse();
 
 private:
+    std::shared_ptr<Expr> parseExpression();
+
     // Check current token
     Token peek();
 

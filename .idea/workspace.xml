@@ -5,6 +5,8 @@
   </component>
   <component name="BackendCodeEditorMiscSettings">
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
   </component>
   <component name="CMakePresetLoader">{
   &quot;useNewFormat&quot;: true
@@ -16,7 +18,9 @@
     <option name="reloaded" value="true" />
   </component>
   <component name="CMakeRunConfigurationManager">
-    <generated />
+    <generated>
+      <config projectName="drim_lang" targetName="test" />
+    </generated>
   </component>
   <component name="CMakeSettings">
     <configurations>
@@ -25,9 +29,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="95f04a9b-314a-4d00-b69f-def2a5b000e8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/drim-lang.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/drim-lang.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Project Report/main.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Project Report/main.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Project Report/main.tex" beforeDir="false" afterPath="$PROJECT_DIR$/Project Report/main.tex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/AST.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/AST.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Interpreter.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Interpreter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Interpreter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Interpreter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.drim" beforeDir="false" afterPath="$PROJECT_DIR$/test.drim" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,18 +51,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "SMTEmon"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;SMTEmon&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/hasanakhiar/drim-lang.git",
-    "accountId": "9b75afe4-47a6-4836-ba3a-e834dd078ed0"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/hasanakhiar/drim-lang.git&quot;,
+    &quot;accountId&quot;: &quot;9b75afe4-47a6-4836-ba3a-e834dd078ed0&quot;
   }
-}]]></component>
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/src/Main.cpp" root0="SKIP_HIGHLIGHTING" />
   </component>
@@ -86,6 +96,7 @@
   "keyToString": {
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "CMake Application.drim_lang.executor": "Run",
+    "CMake Application.test.executor": "Run",
     "CMake Application.test_lexer.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.RadMigrateCodeStyle": "true",
@@ -100,7 +111,8 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "features/conversion",
+    "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/Users/hasanakhiar/Codes/drim-lang",
     "node.js.detected.package.eslint": "true",
@@ -119,7 +131,12 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="test.drim" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="drim_lang" TARGET_NAME="test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="drim_lang" RUN_TARGET_NAME="test">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -138,6 +155,7 @@
       <workItem from="1765033918239" duration="7177000" />
       <workItem from="1765337272224" duration="1759000" />
       <workItem from="1765636383443" duration="6000" />
+      <workItem from="1766333313732" duration="4152000" />
     </task>
     <servers />
   </component>

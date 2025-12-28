@@ -23,6 +23,29 @@ Token Parser::consume(TokenType type, std::string message) {
     exit(1);
 }
 
+std::shared_ptr<Expr> Parser::parseExpression() {
+    if (peek().type == TOKEN_STRING || peek().type == TOKEN_INT) {
+        std::string val = peek().lexeme;
+        advance();
+        return std::make_shared<LiteralExpr>(val);
+    }
+    else if (peek().type == TOKEN_IDENTIFIER) {
+        // Check if it's a function call: identifier(
+        if (current + 1 < tokens.size() && tokens[current + 1].type == TOKEN_LPAREN) {
+            Token name = advance(); // Function name
+            consume(TOKEN_LPAREN, "Expect '(' after function name");
+            auto arg = parseExpression(); // Argument
+            consume(TOKEN_RPAREN, "Expect ')' after argument");
+            return std::make_shared<CallExpr>(name, arg);
+        }
+        else {
+            Token name = advance();
+            return std::make_shared<VariableExpr>(name);
+        }
+    }
+    return nullptr;
+}
+
 // === MAIN PARSE LOGIC ===
 std::vector<std::shared_ptr<Stmt>> Parser::parse() {
     std::vector<std::shared_ptr<Stmt>> commands;
@@ -44,23 +67,7 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
             advance(); // Eat 'wake'
             consume(TOKEN_LPAREN, "Expect '(' after wake");
 
-            std::shared_ptr<Expr> valueToPrint;
-
-            // Checking for string literal
-            if (peek().type == TOKEN_STRING) {
-                valueToPrint = std::make_shared<LiteralExpr>(peek().lexeme);
-                advance();
-            }
-            // Checking for variable
-            else if (peek().type == TOKEN_IDENTIFIER) {
-                valueToPrint = std::make_shared<VariableExpr>(peek());
-                advance();
-            }
-            // Checking for number
-            else if (peek().type == TOKEN_INT) {
-                valueToPrint = std::make_shared<LiteralExpr>(peek().lexeme);
-                advance();
-            }
+            std::shared_ptr<Expr> valueToPrint = parseExpression();
 
             consume(TOKEN_RPAREN, "Expect ')' after value");
             commands.push_back(std::make_shared<PrintStmt>(valueToPrint));
@@ -73,20 +80,7 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
             Token varName = advance(); // consume name
             advance(); // consume '='
 
-            std::shared_ptr<Expr> valueToSave;
-
-            if (peek().type == TOKEN_STRING) {
-                valueToSave = std::make_shared<LiteralExpr>(peek().lexeme);
-                advance();
-            }
-            else if (peek().type == TOKEN_INT) {
-                valueToSave = std::make_shared<LiteralExpr>(peek().lexeme);
-                advance();
-            }
-            else if (peek().type == TOKEN_IDENTIFIER) {
-                valueToSave = std::make_shared<VariableExpr>(peek());
-                advance();
-            }
+            std::shared_ptr<Expr> valueToSave = parseExpression();
 
             commands.push_back(std::make_shared<AssignStmt>(varName, valueToSave));
         }

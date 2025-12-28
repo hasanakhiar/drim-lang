@@ -38,6 +38,13 @@ struct VariableExpr : Expr {
     VariableExpr(Token n) : name(n) {}
 };
 
+// Represents a function call like 'kgToLbs(10)'
+struct CallExpr : Expr {
+    Token callee;
+    std::shared_ptr<Expr> argument;
+    CallExpr(Token c, std::shared_ptr<Expr> a) : callee(c), argument(a) {}
+};
+
 
 // 3. The Commands (Statements)
 
