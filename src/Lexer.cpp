@@ -29,6 +29,17 @@ void Lexer::scanToken() {
         case '/': addToken(TOKEN_SLASH); break;
         case '^': addToken(TOKEN_POW); break;
 
+        // Bitwise & Shift
+        case '&': addToken(TOKEN_BIT_AND); break;
+        case '|': addToken(TOKEN_BIT_OR); break;
+        case '~': addToken(TOKEN_BIT_NOT); break;
+        case '<': 
+            if(peek() == '<') { advance(); addToken(TOKEN_LSHIFT); }
+            break;
+        case '>':
+             if(peek() == '>') { advance(); addToken(TOKEN_RSHIFT); }
+             break;
+
 
         case ' ':
         case '\r':

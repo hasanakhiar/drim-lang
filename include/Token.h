@@ -19,6 +19,13 @@ enum TokenType {
     TOKEN_SLASH,    // /
     TOKEN_POW,      // ^
 
+    // Bitwise Operators
+    TOKEN_BIT_AND,    // &
+    TOKEN_BIT_OR,     // |
+    TOKEN_BIT_NOT,    // ~
+    TOKEN_LSHIFT,     // <<
+    TOKEN_RSHIFT,     // >>
+
     TOKEN_IDENTIFIER, // Variable
     TOKEN_STRING,     // "hello"
     TOKEN_INT,        // 123
