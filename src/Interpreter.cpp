@@ -28,7 +28,18 @@ std::string Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
-    // 3. Binary Math (1 + 2)
+    // 3. Unary Expr (~5)
+    if (auto una = std::dynamic_pointer_cast<UnaryExpr>(expr)) {
+        std::string rightVal = evaluate(una->right);
+        if (isNumber(rightVal)) {
+             int r = std::stoi(rightVal);
+             if (una->op.type == TOKEN_BIT_NOT) return std::to_string(~r);
+        }
+        std::cerr << "Runtime Error: Invalid unary operation\n";
+        exit(1);
+    }
+
+    // 4. Binary Math (1 + 2)
     if (auto bin = std::dynamic_pointer_cast<BinaryExpr>(expr)) {
         std::string leftVal = evaluate(bin->left);
         std::string rightVal = evaluate(bin->right);
@@ -46,6 +57,12 @@ std::string Interpreter::evaluate(std::shared_ptr<Expr> expr) {
                 return std::to_string(l / r);
             }
             if (bin->op.type == TOKEN_POW) return std::to_string((int)pow(l, r));
+
+            // Bitwise
+            if (bin->op.type == TOKEN_BIT_AND) return std::to_string(l & r);
+            if (bin->op.type == TOKEN_BIT_OR) return std::to_string(l | r);
+            if (bin->op.type == TOKEN_LSHIFT) return std::to_string(l << r);
+            if (bin->op.type == TOKEN_RSHIFT) return std::to_string(l >> r);
         }
 
         // String Concatenation (if using +)
