@@ -48,6 +48,13 @@ struct BinaryExpr : Expr {
         : left(l), op(o), right(r) {}
 };
 
+struct UnaryExpr : Expr {
+    Token op;
+    std::shared_ptr<Expr> right;
+    UnaryExpr(Token o, std::shared_ptr<Expr> r) : op(o), right(r) {}
+};
+
+
 
 // 3. The Commands (Statements)
 

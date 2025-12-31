@@ -31,16 +31,52 @@ bool Parser::check(TokenType type) {
 }
 
 
-// === EXPRESSION PARSING (Lowest Priority: + -) ===
+// === EXPRESSION PARSING (Entry Point) ===
 std::shared_ptr<Expr> Parser::expression() {
-    std::shared_ptr<Expr> expr = term();
+    return bitwiseOr();
+}
 
+// === BITWISE OR (|) ===
+std::shared_ptr<Expr> Parser::bitwiseOr() {
+    std::shared_ptr<Expr> expr = bitwiseAnd();
+    while (check(TOKEN_BIT_OR)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = bitwiseAnd();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+    return expr;
+}
+
+// === BITWISE AND (&) ===
+std::shared_ptr<Expr> Parser::bitwiseAnd() {
+    std::shared_ptr<Expr> expr = shift();
+    while (check(TOKEN_BIT_AND)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = shift();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+    return expr;
+}
+
+// === SHIFT (<<, >>) ===
+std::shared_ptr<Expr> Parser::shift() {
+    std::shared_ptr<Expr> expr = additive();
+    while (check(TOKEN_LSHIFT) || check(TOKEN_RSHIFT)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = additive();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+    return expr;
+}
+
+// === ADDITIVE (+, -) ===
+std::shared_ptr<Expr> Parser::additive() {
+    std::shared_ptr<Expr> expr = term();
     while (check(TOKEN_PLUS) || check(TOKEN_MINUS)) {
         Token op = advance();
         std::shared_ptr<Expr> right = term();
         expr = std::make_shared<BinaryExpr>(expr, op, right);
     }
-
     return expr;
 }
 
@@ -59,7 +95,7 @@ std::shared_ptr<Expr> Parser::term() {
 
 // === POWER PARSING (Right-associative) ===
 std::shared_ptr<Expr> Parser::power() {
-    std::shared_ptr<Expr> expr = primary();
+    std::shared_ptr<Expr> expr = unary();
 
     while (check(TOKEN_POW)) {
         Token op = advance();
@@ -68,6 +104,16 @@ std::shared_ptr<Expr> Parser::power() {
     }
 
     return expr;
+}
+
+// === UNARY PARSING (~, etc) ===
+std::shared_ptr<Expr> Parser::unary() {
+    if (check(TOKEN_BIT_NOT)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = unary();
+        return std::make_shared<UnaryExpr>(op, right);
+    }
+    return primary();
 }
 
 // === PRIMARY PARSING (Highest Priority: literals, vars, parens) ===
