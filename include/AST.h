@@ -20,8 +20,7 @@ struct Expr {
     virtual ~Expr() = default;
 };
 
-// 2. The Data (Expressions)
-// Represents raw text like "hello" or "123"
+// 2. The Data (Expressions) Represents raw text like "hello" or "123"
 struct LiteralExpr : Expr {
     Value value; // Can now hold int, double, or string
     LiteralExpr(Value v) : value(v) {}
@@ -34,9 +33,7 @@ struct VariableExpr : Expr {
 };
 
 
-// 3. The Commands (Statements)
-
-// Command: drim(x)
+// 3. The Commands (Statements) -- Command: drim(x)
 struct InputStmt : Stmt {
     Token name;
     InputStmt(Token n) : name(n) {}
@@ -53,6 +50,10 @@ struct AssignStmt : Stmt {
     Token name;
     std::shared_ptr<Expr> value;
     AssignStmt(Token n, std::shared_ptr<Expr> v) : name(n), value(v) {}
+};
+struct TypeStmt : Stmt {
+    std::shared_ptr<Expr> expression; // (variable or literal currently being checked)
+    TypeStmt(std::shared_ptr<Expr> e) : expression(e) {}
 };
 
 #endif

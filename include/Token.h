@@ -10,7 +10,7 @@ enum TokenType {
 
     KW_DRIM,    // Input
     KW_WAKE,    // Output
-
+    KW_TYPE,    // Type Function
 
     TOKEN_IDENTIFIER, // Variable
     TOKEN_STRING,     // "hello"
