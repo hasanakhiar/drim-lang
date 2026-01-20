@@ -62,11 +62,24 @@ void Lexer::string() {
     
     tokens.push_back({TOKEN_STRING, value, line});
 }
-void Lexer::number(){
-    while(isDigit(peek())) advance(); 
 
-    std::string value = source.substr(start, current - start);
-    tokens.push_back({TOKEN_INT, value, line});
+void Lexer::number() {
+    while (isDigit(peek())) advance();
+
+    // Look for a fractional part
+    if (peek() == '.' && isDigit(source[current + 1])) {
+        // Consume the "."
+        advance();
+
+        // Consume the rest of the digits
+        while (isDigit(peek())) advance();
+        
+        // It is a Double
+        addToken(TOKEN_DOUBLE);
+    } else {
+        // It is an Integer
+        addToken(TOKEN_INT);
+    }
 }
 
 void Lexer::addToken(TokenType type){
