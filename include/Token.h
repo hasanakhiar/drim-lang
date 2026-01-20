@@ -15,7 +15,7 @@ enum TokenType {
     TOKEN_IDENTIFIER, // Variable
     TOKEN_STRING,     // "hello"
     TOKEN_INT,        // 123
-
+    TOKEN_DOUBLE,
 
     TOKEN_LPAREN,     // (
     TOKEN_RPAREN,     // )
