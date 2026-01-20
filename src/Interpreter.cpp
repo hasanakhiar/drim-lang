@@ -3,7 +3,38 @@
 //
 
 #include "../include/Interpreter.h"
+#include "../include/Utils.h"
 #include <iostream>
+
+// Helper to determine type from raw input string
+Value parseInput(std::string text) {
+    if (text.empty()) return text;
+
+    bool isNumber = true;
+    bool hasDot = false;
+    
+    // Check every character
+    for (char c : text) {
+        if (!isDigit(c)) {
+            if (c == '.' && !hasDot) {
+                hasDot = true; // Allow one dot
+            } else {
+                isNumber = false; // It's text (e.g., "a", "12a")
+                break;
+            }
+        }
+    }
+
+    if (isNumber) {
+        try {
+            if (hasDot) return std::stod(text); // It's a double
+            return std::stoi(text);            // It's an int
+        } catch (...) {
+            return text; // Fallback to string on error
+        }
+    }
+    return text; // It's a string
+}
 
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
     for (auto cmd : commands) {
@@ -48,7 +79,8 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
                 }
             }
 
-            std::cout << output << "\n";
+            printValue(output);
+            std::cout << "\n";
         }
     }
 }

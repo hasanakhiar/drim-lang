@@ -1,4 +1,6 @@
-a = 10
-wake(a)
-drim(b)
-wake(b)
+drim(x)
+wake(x) 
+y = 50
+wake(y)
+z = 99.99
+wake(z)
