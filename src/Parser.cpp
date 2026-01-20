@@ -78,6 +78,35 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
             commands.push_back(std::make_shared<PrintStmt>(valueToPrint));
         }
 
+        else if (peek().type == KW_TYPE) {
+            advance();   
+            consume(TOKEN_LPAREN, "Expect '(' after type");
+
+            std::shared_ptr<Expr> valueToCheck;
+
+            // Detect What's inside
+            if (peek().type == TOKEN_STRING) {
+                valueToCheck = std::make_shared<LiteralExpr>(peek().lexeme);
+                advance();
+            }
+            else if (peek().type == TOKEN_INT) {
+                int val = std::stoi(peek().lexeme);
+                valueToCheck = std::make_shared<LiteralExpr>(val);
+                advance();
+            }
+            else if (peek().type == TOKEN_DOUBLE) {
+                double val = std::stod(peek().lexeme);
+                valueToCheck = std::make_shared<LiteralExpr>(val);
+                advance();
+            }
+            else if (peek().type == TOKEN_IDENTIFIER) {
+                valueToCheck = std::make_shared<VariableExpr>(peek());
+                advance();
+            }
+
+            consume(TOKEN_RPAREN, "Expect ')' after value");
+            commands.push_back(std::make_shared<TypeStmt>(valueToCheck));
+        }
         // Handle Assignment: var = value        --   Is it "NAME =" ?
         else if (peek().type == TOKEN_IDENTIFIER &&
                  (current + 1 < tokens.size() && tokens[current + 1].type == TOKEN_ASSIGN)) {
@@ -107,7 +136,7 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
 
             commands.push_back(std::make_shared<AssignStmt>(varName, valueToSave));
         }
-        // Skip unknown tokens for now
+        // Skipping Unknown Tokens for now
         else {
             advance();
         }

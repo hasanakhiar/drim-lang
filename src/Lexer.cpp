@@ -43,6 +43,7 @@ void Lexer::identifier() {
     TokenType type = TOKEN_IDENTIFIER;
     if (text == "drim") type = KW_DRIM;
     if (text == "wake") type = KW_WAKE;
+    if (text == "type") type = KW_TYPE; 
 
     addToken(type);
 }
@@ -62,7 +63,6 @@ void Lexer::string() {
     
     tokens.push_back({TOKEN_STRING, value, line});
 }
-
 void Lexer::number() {
     while (isDigit(peek())) advance();
 
