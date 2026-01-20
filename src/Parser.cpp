@@ -1,6 +1,9 @@
 //
 // Created by Muntahi Hasan Akhiar on 6/12/25.
 //
+
+// ----------------------------------------------------     TODO - Implement STOI, STOD  -------------------------------------------------------
+
 #include "../include/Parser.h"
 #include <iostream>
 
@@ -41,24 +44,33 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
 
         //  Handle Output: wake(value)
         else if (peek().type == KW_WAKE) {
-            advance(); // Eat 'wake'
+            advance(); 
             consume(TOKEN_LPAREN, "Expect '(' after wake");
 
             std::shared_ptr<Expr> valueToPrint;
 
-            // Checking for string literal
             if (peek().type == TOKEN_STRING) {
                 valueToPrint = std::make_shared<LiteralExpr>(peek().lexeme);
                 advance();
             }
+
+            else if (peek().type == TOKEN_INT) {
+                // Convert text "123" -> int 123
+                int val = std::stoi(peek().lexeme);
+                valueToPrint = std::make_shared<LiteralExpr>(val);
+                advance();
+            }
+
+            else if (peek().type == TOKEN_DOUBLE) {
+                // Convert text "123.45" -> double 123.45
+                double val = std::stod(peek().lexeme);
+                valueToPrint = std::make_shared<LiteralExpr>(val);
+                advance();
+            }
+
             // Checking for variable
             else if (peek().type == TOKEN_IDENTIFIER) {
                 valueToPrint = std::make_shared<VariableExpr>(peek());
-                advance();
-            }
-            // Checking for number
-            else if (peek().type == TOKEN_INT) {
-                valueToPrint = std::make_shared<LiteralExpr>(peek().lexeme);
                 advance();
             }
 
@@ -66,8 +78,7 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
             commands.push_back(std::make_shared<PrintStmt>(valueToPrint));
         }
 
-        // Handle Assignment: var = value
-        // Is it "NAME =" ?
+        // Handle Assignment: var = value        --   Is it "NAME =" ?
         else if (peek().type == TOKEN_IDENTIFIER &&
                  (current + 1 < tokens.size() && tokens[current + 1].type == TOKEN_ASSIGN)) {
             Token varName = advance(); // consume name
@@ -80,7 +91,13 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
                 advance();
             }
             else if (peek().type == TOKEN_INT) {
-                valueToSave = std::make_shared<LiteralExpr>(peek().lexeme);
+                int val = std::stoi(peek().lexeme);
+                valueToSave = std::make_shared<LiteralExpr>(val);
+                advance();
+            }
+            else if (peek().type == TOKEN_DOUBLE) {
+                double val = std::stod(peek().lexeme);
+                valueToSave = std::make_shared<LiteralExpr>(val);
                 advance();
             }
             else if (peek().type == TOKEN_IDENTIFIER) {
