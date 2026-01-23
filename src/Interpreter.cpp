@@ -98,7 +98,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
                 return (int)(l / r); // Integer division
             }
             if (bin->op.type == TOKEN_POW) {
-                return (int)pow(l, r); // Pow returns double usually, casting to int for now based on previous logic
+                return pow(l, r);
             }
 
             // --- BITWISE (Must be Ints) ---
