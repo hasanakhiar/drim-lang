@@ -6,17 +6,18 @@
 #define INTERPRETER_H
 
 #include "AST.h"
+#include "Value.h"
 #include <vector>
 #include <map>
 #include <string>
 #include <memory>
 
 class Interpreter {
-    // Simple Memory: Stores variable name "a" -> value "10"
-    std::map<std::string, std::string> memory;
+    // Stores variable name "a" -> value "10"
+    std::map<std::string, Value> memory;
 
 public:
-    // Main function to execute the list of commands
+    // Function for executing commands
     void interpret(std::vector<std::shared_ptr<Stmt>> commands);
 };
 

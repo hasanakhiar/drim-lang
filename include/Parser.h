@@ -16,20 +16,20 @@ class Parser {
     int current = 0;
 
 public:
-    // Constructor takes the list of tokens from the Lexer
+    // Constructor
     Parser(std::vector<Token> t);
-
-    // Main function to convert Tokens -> Commands (AST)
+    
+    // convert Tokens -> Commands (AST)
     std::vector<std::shared_ptr<Stmt>> parse();
 
 private:
-    // Helper to see the current token without moving
+    // Check current token
     Token peek();
 
-    // Helper to consume the current token and move forward
+    // Consume current and move forward
     Token advance();
 
-    // Helper to require a specific token (like closing parenthesis)
+    //Check specific token
     Token consume(TokenType type, std::string message);
 };
 
