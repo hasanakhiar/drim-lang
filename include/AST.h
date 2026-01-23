@@ -6,11 +6,9 @@
 #define AST_H
 
 #include "Token.h"
+#include "Value.h"
 #include <memory>  
 #include <string>
-
-// 1. The Parents (Base Types)
-
 
 // Everything that "Does something" is a Stmt (Statement)
 struct Stmt {
@@ -22,14 +20,10 @@ struct Expr {
     virtual ~Expr() = default;
 };
 
-// ==========================================
-// 2. The Data (Expressions)
-// ==========================================
-
-// Represents raw text like "hello" or "123"
+// 2. The Data (Expressions) Represents raw text like "hello" or "123"
 struct LiteralExpr : Expr {
-    std::string value;
-    LiteralExpr(std::string v) : value(v) {}
+    Value value; // Can now hold int, double, or string
+    LiteralExpr(Value v) : value(v) {}
 };
 
 // Represents a variable name like 'myVar'
@@ -56,25 +50,27 @@ struct UnaryExpr : Expr {
 
 
 
-// 3. The Commands (Statements)
-
-// Command: drim(x)
+// 3. The Commands (Statements) -- Command: drim(x)
 struct InputStmt : Stmt {
-    Token name; // Stores the variable name 'x'
+    Token name;
     InputStmt(Token n) : name(n) {}
 };
 
 // Command: wake("hello")
 struct PrintStmt : Stmt {
-    std::shared_ptr<Expr> expression; // Points to the data "hello"
+    std::shared_ptr<Expr> expression;
     PrintStmt(std::shared_ptr<Expr> e) : expression(e) {}
 };
 
 // Command: x = "value"
 struct AssignStmt : Stmt {
-    Token name; // 'x'
-    std::shared_ptr<Expr> value; // Points to "value"
+    Token name;
+    std::shared_ptr<Expr> value;
     AssignStmt(Token n, std::shared_ptr<Expr> v) : name(n), value(v) {}
+};
+struct TypeStmt : Stmt {
+    std::shared_ptr<Expr> expression; // (variable or literal currently being checked)
+    TypeStmt(std::shared_ptr<Expr> e) : expression(e) {}
 };
 
 #endif

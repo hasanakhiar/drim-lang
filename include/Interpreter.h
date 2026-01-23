@@ -6,6 +6,7 @@
 #define INTERPRETER_H
 
 #include "AST.h"
+#include "Value.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -13,14 +14,14 @@
 
 class Interpreter {
     // Stores variable name "a" -> value "10"
-    std::map<std::string, std::string> memory;
+    std::map<std::string, Value> memory;
 
 public:
     // Function for executing commands
     void interpret(std::vector<std::shared_ptr<Stmt>> commands);
 
-    // Helper to evaluate Math/Strings and return the result string
-    std::string evaluate(std::shared_ptr<Expr> expr);
+    // Helper to evaluate Math/Strings and return the result Value
+    Value evaluate(std::shared_ptr<Expr> expr);
 };
 
 #endif

@@ -1,5 +1,6 @@
 #include "../include/Parser.h"
 #include <iostream>
+#include <string>
 
 // Constructor
 Parser::Parser(std::vector<Token> t) : tokens(t) {}
@@ -118,9 +119,18 @@ std::shared_ptr<Expr> Parser::unary() {
 
 // === PRIMARY PARSING (Highest Priority: literals, vars, parens) ===
 std::shared_ptr<Expr> Parser::primary() {
-    if (check(TOKEN_INT) || check(TOKEN_STRING)) {
-        Token t = advance();
-        return std::make_shared<LiteralExpr>(t.lexeme);
+    if (check(TOKEN_INT)) {
+        int val = std::stoi(advance().lexeme);
+        return std::make_shared<LiteralExpr>(val);
+    }
+
+    if (check(TOKEN_DOUBLE)) {
+        double val = std::stod(advance().lexeme);
+        return std::make_shared<LiteralExpr>(val);
+    }
+
+    if (check(TOKEN_STRING)) {
+        return std::make_shared<LiteralExpr>(advance().lexeme);
     }
 
     if (check(TOKEN_IDENTIFIER)) {
@@ -153,13 +163,21 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
         }
         else if (peek().type == KW_WAKE) {
             advance();
-            consume(TOKEN_LPAREN, "Expect '('");
+            consume(TOKEN_LPAREN, "Expect '(' after wake");
 
-            // NOW WE PARSE A FULL EXPRESSION, NOT JUST A LITERAL
             std::shared_ptr<Expr> value = expression();
 
-            consume(TOKEN_RPAREN, "Expect ')'");
+            consume(TOKEN_RPAREN, "Expect ')' after value");
             commands.push_back(std::make_shared<PrintStmt>(value));
+        }
+        else if (peek().type == KW_TYPE) {
+            advance();   
+            consume(TOKEN_LPAREN, "Expect '(' after type");
+
+            std::shared_ptr<Expr> valueToCheck = expression();
+
+            consume(TOKEN_RPAREN, "Expect ')' after value");
+            commands.push_back(std::make_shared<TypeStmt>(valueToCheck));
         }
         else if (peek().type == TOKEN_IDENTIFIER &&
                 (current + 1 < tokens.size() && tokens[current+1].type == TOKEN_ASSIGN)) {
@@ -167,7 +185,6 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
             Token varName = advance();
             advance(); // Eat '='
 
-            // NOW WE PARSE A FULL EXPRESSION
             std::shared_ptr<Expr> value = expression();
 
             commands.push_back(std::make_shared<AssignStmt>(varName, value));
