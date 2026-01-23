@@ -5,7 +5,7 @@
 #include <cmath>
 #include <variant>
 
-// --- HELPER: Try to parse string to Number ---
+// Parse string inputs into int or double if possible
 Value parseInput(std::string text) {
     if (text.empty()) return text;
 
@@ -28,20 +28,18 @@ Value parseInput(std::string text) {
             if (hasDot) return std::stod(text);
             return std::stoi(text);
         } catch (...) {
+            // fallback to string if conversion fails
             return text;
         }
     }
     return text;
 }
 
-// --- EVALUATE EXPRESSIONS ---
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
-    // 1. Literal
     if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(expr)) {
         return lit->value;
     }
 
-    // 2. Variable
     if (auto var = std::dynamic_pointer_cast<VariableExpr>(expr)) {
         if (memory.count(var->name.lexeme)) {
             return memory[var->name.lexeme];
@@ -50,7 +48,6 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
-    // 3. Unary Expr (~5)
     if (auto una = std::dynamic_pointer_cast<UnaryExpr>(expr)) {
         Value rightVal = evaluate(una->right);
         
@@ -62,19 +59,15 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
-    // 4. Binary Math (1 + 2)
     if (auto bin = std::dynamic_pointer_cast<BinaryExpr>(expr)) {
         Value leftVal = evaluate(bin->left);
         Value rightVal = evaluate(bin->right);
 
-        // --- MATH OPERATIONS ---
-        
-        // CHECK: Are both numbers? (Int or Double)
+        // Numeric operations
         bool leftIsNum = std::holds_alternative<int>(leftVal) || std::holds_alternative<double>(leftVal);
         bool rightIsNum = std::holds_alternative<int>(rightVal) || std::holds_alternative<double>(rightVal);
 
         if (leftIsNum && rightIsNum) {
-            // Promote to double if one is double
             bool useDouble = std::holds_alternative<double>(leftVal) || std::holds_alternative<double>(rightVal);
             
             double l = std::holds_alternative<int>(leftVal) ? std::get<int>(leftVal) : std::get<double>(leftVal);
@@ -95,13 +88,13 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             if (bin->op.type == TOKEN_SLASH) {
                 if (r == 0) { std::cerr << "Runtime Error: Division by zero\n"; exit(1); }
                 if(useDouble) return l / r;
-                return (int)(l / r); // Integer division
+                return (int)(l / r);
             }
             if (bin->op.type == TOKEN_POW) {
                 return pow(l, r);
             }
 
-            // --- BITWISE (Must be Ints) ---
+            // Bitwise operations (integers only)
             if (!useDouble) {
                 int li = (int)l;
                 int ri = (int)r;
@@ -112,9 +105,8 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             }
         }
 
-        // --- STRING CONCATENATION ---
+        // String concatenation
         if (bin->op.type == TOKEN_PLUS) {
-            // Helper lambda to to_string
             auto toStr = [](const Value& v) -> std::string {
                 if (std::holds_alternative<int>(v)) return std::to_string(std::get<int>(v));
                 if (std::holds_alternative<double>(v)) return std::to_string(std::get<double>(v));
@@ -127,15 +119,12 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
-    return 0; // Default
+    return 0;
 }
 
-
-// --- MAIN LOOP ---
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
     for (auto cmd : commands) {
 
-        // INPUT
         if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
             std::cout << "drim input " << input->name.lexeme << ": ";
@@ -144,20 +133,17 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
             }
         }
 
-        // ASSIGNMENT
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
             Value val = evaluate(assign->value);
             memory[assign->name.lexeme] = val;
         }
 
-        // PRINT
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
             Value output = evaluate(print->expression);
             printValue(output);
             std::cout << "\n";
         }
 
-        // TYPE CHECK
         else if (auto typeStmt = std::dynamic_pointer_cast<TypeStmt>(cmd)) {
             Value valToCheck = evaluate(typeStmt->expression);
 
