@@ -1,6 +1,4 @@
-drim(x)
-wake(x) 
-y = 50
-wake(y)
-z = 99.99
-wake(z)
+a = 2.1
+b = 3.4
+
+wake(b ^ a)

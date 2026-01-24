@@ -5,6 +5,7 @@
 #include "../include/Lexer.h"
 #include "../include/Utils.h"
 #include <iostream>
+
 void Lexer::scanTokens() {
     while (!isAtEnd()) {
         start = current;
@@ -16,11 +17,27 @@ void Lexer::scanTokens() {
 void Lexer::scanToken() {
     char c = advance();
     switch (c) {
-
         case '(': addToken(TOKEN_LPAREN); break;
         case ')': addToken(TOKEN_RPAREN); break;
         case '=': addToken(TOKEN_ASSIGN); break;
 
+        // Math
+        case '+': addToken(TOKEN_PLUS); break;
+        case '-': addToken(TOKEN_MINUS); break;
+        case '*': addToken(TOKEN_STAR); break;
+        case '/': addToken(TOKEN_SLASH); break;
+        case '^': addToken(TOKEN_POW); break;
+
+        // Bitwise
+        case '&': addToken(TOKEN_BIT_AND); break;
+        case '|': addToken(TOKEN_BIT_OR); break;
+        case '~': addToken(TOKEN_BIT_NOT); break;
+        case '<': 
+            if(peek() == '<') { advance(); addToken(TOKEN_LSHIFT); }
+            break;
+        case '>':
+             if(peek() == '>') { advance(); addToken(TOKEN_RSHIFT); }
+             break;
 
         case ' ':
         case '\r':
@@ -60,24 +77,17 @@ void Lexer::string() {
     advance() ;
 
     std::string value = source.substr(start + 1, current - start - 2);
-    
     tokens.push_back({TOKEN_STRING, value, line});
 }
+
 void Lexer::number() {
     while (isDigit(peek())) advance();
 
-    // Look for a fractional part
     if (peek() == '.' && isDigit(source[current + 1])) {
-        // Consume the "."
         advance();
-
-        // Consume the rest of the digits
         while (isDigit(peek())) advance();
-        
-        // It is a Double
         addToken(TOKEN_DOUBLE);
     } else {
-        // It is an Integer
         addToken(TOKEN_INT);
     }
 }
@@ -93,8 +103,7 @@ char Lexer::advance() {
 }
 
 char Lexer::peek(){
-    if(isAtEnd())
-        return '\0';
+    if(isAtEnd()) return '\0';
     return source[current];
 }
 

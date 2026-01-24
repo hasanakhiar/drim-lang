@@ -1,0 +1,7 @@
+x = 5
+y = 3
+wake(x & y)
+wake(x | y)
+wake(~x)
+wake(1 << 2)
+wake(8 >> 1)

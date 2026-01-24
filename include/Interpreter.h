@@ -13,12 +13,11 @@
 #include <memory>
 
 class Interpreter {
-    // Stores variable name "a" -> value "10"
     std::map<std::string, Value> memory;
 
 public:
-    // Function for executing commands
     void interpret(std::vector<std::shared_ptr<Stmt>> commands);
+    Value evaluate(std::shared_ptr<Expr> expr);
 };
 
 #endif
