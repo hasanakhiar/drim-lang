@@ -48,6 +48,12 @@ struct UnaryExpr : Expr {
     UnaryExpr(Token o, std::shared_ptr<Expr> r) : op(o), right(r) {}
 };
 
+struct ConvertExpr : Expr {
+    std::shared_ptr<Expr> value;
+    std::shared_ptr<Expr> mode;
+    ConvertExpr(std::shared_ptr<Expr> v, std::shared_ptr<Expr> m) : value(v), mode(m) {}
+};
+
 
 
 // 3. The Commands (Statements) -- Command: drim(x)

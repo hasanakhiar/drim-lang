@@ -1,4 +1,7 @@
-a = 2.1
-b = 3.4
+x = 10
+cm = convert(x, "in_cm")
+wake("10 in to cm: " + cm)
 
-wake(b ^ a)
+hp = 100
+kw = convert(hp, "hp_kw")
+wake("100 hp to kw: " + kw)
