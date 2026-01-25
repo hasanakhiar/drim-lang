@@ -12,6 +12,7 @@ set(SOURCES
         src/Parser.cpp
         src/Interpreter.cpp
         src/Main.cpp
+        src/Physics.cpp
 )
 
 add_executable(test ${SOURCES})

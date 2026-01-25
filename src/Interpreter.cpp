@@ -1,5 +1,6 @@
 #include "../include/Interpreter.h"
 #include "../include/Utils.h"
+#include "../include/Physics.h"
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -43,8 +44,7 @@ double getDouble(const Value& v) {
 }
 
 Interpreter::Interpreter() {
-    // Register Native Functions here
-    // Example: nativeFunctions["test"] = ...
+    registerPhysicsFunctions(nativeFunctions);
 }
 
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
