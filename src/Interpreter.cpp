@@ -99,6 +99,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "psi_bar") return num * 0.0689476;
         if (mode == "bar_psi") return num / 0.0689476;
 
+        // Digital Storage
+        if (mode == "mb_gb") return num / 1024.0;
+        if (mode == "gb_mb") return num * 1024.0;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
