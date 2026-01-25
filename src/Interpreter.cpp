@@ -103,6 +103,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "mb_gb") return num / 1024.0;
         if (mode == "gb_mb") return num * 1024.0;
 
+        // Energy
+        if (mode == "j_cal") return num / 4184.0;
+        if (mode == "cal_j") return num * 4184.0;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
