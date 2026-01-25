@@ -121,4 +121,47 @@ void registerPhysicsFunctions(std::map<std::string, NativeFn>& functions) {
         }
         return getNum(args, 0) * getNum(args, 1);
     };
+
+    // 3. Work, Energy & Power
+
+    // work(force, distance) -> W = Fd
+    functions["work"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: work(F, d) expects 2 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1);
+    };
+
+    // kinetic_energy(mass, velocity) -> KE = 0.5 * m * v^2
+    functions["kinetic_energy"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: kinetic_energy(m, v) expects 2 arguments.\n";
+             return 0.0;
+        }
+        double m = getNum(args, 0);
+        double v = getNum(args, 1);
+        return 0.5 * m * v * v;
+    };
+
+    // potential_energy(mass, gravity, height) -> PE = mgh
+    functions["potential_energy"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 3) {
+             std::cout << "Error: potential_energy(m, g, h) expects 3 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1) * getNum(args, 2);
+    };
+
+    // power(work, time) -> P = W/t
+    functions["power"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: power(W, t) expects 2 arguments.\n";
+             return 0.0;
+        }
+        double W = getNum(args, 0);
+        double t = getNum(args, 1);
+        if (t == 0) return 0.0;
+        return W / t;
+    };
 }
