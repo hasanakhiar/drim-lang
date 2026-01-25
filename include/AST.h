@@ -58,6 +58,12 @@ struct CallExpr : Expr {
         : callee(c), paren(p), arguments(args) {}
 };
 
+struct ConvertExpr : Expr {
+    std::shared_ptr<Expr> value;
+    std::shared_ptr<Expr> mode;
+    ConvertExpr(std::shared_ptr<Expr> v, std::shared_ptr<Expr> m) : value(v), mode(m) {}
+};
+
 // 3. The Commands (Statements) -- Command: drim(x)
 struct InputStmt : Stmt {
     Token name;

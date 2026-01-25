@@ -152,6 +152,18 @@ std::shared_ptr<Expr> Parser::primary() {
         return std::make_shared<VariableExpr>(name);
     }
 
+    if (check(KW_CONVERT)) {
+        advance(); // consume conv_dist
+        consume(TOKEN_LPAREN, "Expect '(' after conv_dist");
+        
+        std::shared_ptr<Expr> val = expression();
+        consume(TOKEN_COMMA, "Expect ',' after value");
+        std::shared_ptr<Expr> mode = expression();
+        
+        consume(TOKEN_RPAREN, "Expect ')' after arguments");
+        return std::make_shared<ConvertExpr>(val, mode);
+    }
+
     if (check(TOKEN_LPAREN)) {
         advance();
         std::shared_ptr<Expr> expr = expression();

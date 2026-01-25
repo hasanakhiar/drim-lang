@@ -6,6 +6,10 @@
 #include <cmath>
 #include <variant>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 // Parse string inputs into int or double if possible
 Value parseInput(std::string text) {
     if (text.empty()) return text;
@@ -84,7 +88,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
     if (auto una = std::dynamic_pointer_cast<UnaryExpr>(expr)) {
         Value rightVal = evaluate(una->right);
-        
+
         if (std::holds_alternative<int>(rightVal)) {
             int r = std::get<int>(rightVal);
             if (una->op.type == TOKEN_BIT_NOT) return ~r;
@@ -93,17 +97,92 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
+    if (auto conv = std::dynamic_pointer_cast<ConvertExpr>(expr)) {
+        Value val = evaluate(conv->value);
+        Value modeVal = evaluate(conv->mode);
+
+        if (!std::holds_alternative<std::string>(modeVal)) {
+            std::cerr << "Runtime Error: Conversion mode must be a string\n";
+            exit(1);
+        }
+
+        std::string mode = std::get<std::string>(modeVal);
+        double num = 0.0;
+
+        // Get the number as double
+        if (std::holds_alternative<int>(val)) num = (double)std::get<int>(val);
+        else if (std::holds_alternative<double>(val)) num = std::get<double>(val);
+        else {
+             std::cerr << "Runtime Error: Cannot convert non-number\n";
+             exit(1);
+        }
+
+        // Length
+        if (mode == "in_cm") return num * 2.54;
+        if (mode == "cm_in") return num / 2.54;
+
+        // Power
+        if (mode == "hp_kw") return num * 0.7457;
+        if (mode == "kw_hp") return num / 0.7457;
+
+        // Temperature
+        if (mode == "f_c") return (num - 32.0) * 5.0 / 9.0;
+        if (mode == "c_f") return (num * 9.0 / 5.0) + 32.0;
+
+        // Pressure
+        if (mode == "psi_bar") return num * 0.0689476;
+        if (mode == "bar_psi") return num / 0.0689476;
+
+        // Digital Storage
+        if (mode == "mb_gb") return num / 1024.0;
+        if (mode == "gb_mb") return num * 1024.0;
+
+        // Energy
+        if (mode == "j_cal") return num / 4184.0;
+        if (mode == "cal_j") return num * 4184.0;
+
+        // Angles
+        if (mode == "deg_rad") return num * (M_PI / 180.0);
+        if (mode == "rad_deg") return num * (180.0 / M_PI);
+
+        // Mass
+        if (mode == "lb_kg") return num * 0.453592;
+        if (mode == "kg_lb") return num / 0.453592;
+
+        // Currency
+        if (mode == "usd_bdt") return num * 122;
+        if (mode == "bdt_usd") return num / 122;
+
+        if (mode == "usd_eur") return num * 0.92;
+        if (mode == "eur_usd") return num / 0.92;
+
+        // Speed
+        if (mode == "mph_kmph") return num * 1.60934;
+        if (mode == "kmph_mph") return num / 1.60934;
+
+        // Torque
+        if (mode == "nm_ftlb") return num * 0.737562;
+        if (mode == "ftlb_nm") return num / 0.737562;
+
+        // G-Force
+        if (mode == "g_ms2") return num * 9.80665;
+        if (mode == "ms2_g") return num / 9.80665;
+
+        std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
+        exit(1);
+    }
+
     if (auto bin = std::dynamic_pointer_cast<BinaryExpr>(expr)) {
         Value leftVal = evaluate(bin->left);
         Value rightVal = evaluate(bin->right);
 
         // Numeric operations
-        bool leftIsNum = std::holds_alternative<int>(leftVal) || std::holds_alternative<double>(leftVal);
+        bool leftIsNum = std::holds_alternative<int>(leftVal) || std::holds_alternative<double>(leftVal); 
         bool rightIsNum = std::holds_alternative<int>(rightVal) || std::holds_alternative<double>(rightVal);
 
         if (leftIsNum && rightIsNum) {
             bool useDouble = std::holds_alternative<double>(leftVal) || std::holds_alternative<double>(rightVal);
-            
+
             double l = std::holds_alternative<int>(leftVal) ? std::get<int>(leftVal) : std::get<double>(leftVal);
             double r = std::holds_alternative<int>(rightVal) ? std::get<int>(rightVal) : std::get<double>(rightVal);
 
@@ -143,7 +222,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (bin->op.type == TOKEN_PLUS) {
             auto toStr = [](const Value& v) -> std::string {
                 if (std::holds_alternative<int>(v)) return std::to_string(std::get<int>(v));
-                if (std::holds_alternative<double>(v)) return std::to_string(std::get<double>(v));
+                if (std::holds_alternative<double>(v)) return std::to_string(std::get<double>(v));        
                 return std::get<std::string>(v);
             };
             return toStr(leftVal) + toStr(rightVal);
@@ -183,7 +262,7 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
 
             if (std::holds_alternative<int>(valToCheck)) std::cout << "<type 'int'>\n";
             else if (std::holds_alternative<double>(valToCheck)) std::cout << "<type 'float'>\n";
-            else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";
+            else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";   
         }
     }
 }

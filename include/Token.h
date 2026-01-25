@@ -11,6 +11,7 @@ enum TokenType {
     KW_DRIM,    // Input
     KW_WAKE,    // Output
     KW_TYPE,    // Type Function
+    KW_CONVERT, // Conversion Function
 
     // Math Operators
     TOKEN_PLUS,     // +
