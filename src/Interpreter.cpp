@@ -5,6 +5,10 @@
 #include <cmath>
 #include <variant>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 // Parse string inputs into int or double if possible
 Value parseInput(std::string text) {
     if (text.empty()) return text;
@@ -50,7 +54,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
     if (auto una = std::dynamic_pointer_cast<UnaryExpr>(expr)) {
         Value rightVal = evaluate(una->right);
-        
+
         if (std::holds_alternative<int>(rightVal)) {
             int r = std::get<int>(rightVal);
             if (una->op.type == TOKEN_BIT_NOT) return ~r;
@@ -59,17 +63,41 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
+    if (auto conv = std::dynamic_pointer_cast<ConvertExpr>(expr)) {
+        Value val = evaluate(conv->value);
+        Value modeVal = evaluate(conv->mode);
+
+        if (!std::holds_alternative<std::string>(modeVal)) {
+            std::cerr << "Runtime Error: Conversion mode must be a string\n";
+            exit(1);
+        }
+
+        std::string mode = std::get<std::string>(modeVal);
+        double num = 0.0;
+
+        // Get the number as double
+        if (std::holds_alternative<int>(val)) num = (double)std::get<int>(val);
+        else if (std::holds_alternative<double>(val)) num = std::get<double>(val);
+        else {
+             std::cerr << "Runtime Error: Cannot convert non-number\n";
+             exit(1);
+        }
+
+        std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
+        exit(1);
+    }
+
     if (auto bin = std::dynamic_pointer_cast<BinaryExpr>(expr)) {
         Value leftVal = evaluate(bin->left);
         Value rightVal = evaluate(bin->right);
 
         // Numeric operations
-        bool leftIsNum = std::holds_alternative<int>(leftVal) || std::holds_alternative<double>(leftVal);
+        bool leftIsNum = std::holds_alternative<int>(leftVal) || std::holds_alternative<double>(leftVal); 
         bool rightIsNum = std::holds_alternative<int>(rightVal) || std::holds_alternative<double>(rightVal);
 
         if (leftIsNum && rightIsNum) {
             bool useDouble = std::holds_alternative<double>(leftVal) || std::holds_alternative<double>(rightVal);
-            
+
             double l = std::holds_alternative<int>(leftVal) ? std::get<int>(leftVal) : std::get<double>(leftVal);
             double r = std::holds_alternative<int>(rightVal) ? std::get<int>(rightVal) : std::get<double>(rightVal);
 
@@ -109,7 +137,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (bin->op.type == TOKEN_PLUS) {
             auto toStr = [](const Value& v) -> std::string {
                 if (std::holds_alternative<int>(v)) return std::to_string(std::get<int>(v));
-                if (std::holds_alternative<double>(v)) return std::to_string(std::get<double>(v));
+                if (std::holds_alternative<double>(v)) return std::to_string(std::get<double>(v));        
                 return std::get<std::string>(v);
             };
             return toStr(leftVal) + toStr(rightVal);
@@ -149,7 +177,7 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
 
             if (std::holds_alternative<int>(valToCheck)) std::cout << "<type 'int'>\n";
             else if (std::holds_alternative<double>(valToCheck)) std::cout << "<type 'float'>\n";
-            else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";
+            else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";   
         }
     }
 }
