@@ -190,4 +190,45 @@ void registerPhysicsFunctions(std::map<std::string, NativeFn>& functions) {
         if (T == 0) return 0.0;
         return (2.0 * 3.1415926535) / T;
     };
+
+    // 5. Electricity
+
+    // voltage(current, resistance) -> V = IR
+    functions["voltage"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: voltage(I, R) expects 2 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1);
+    };
+
+    // current(voltage, resistance) -> I = V/R
+    functions["current"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: current(V, R) expects 2 arguments.\n";
+             return 0.0;
+        }
+        double V = getNum(args, 0);
+        double R = getNum(args, 1);
+        if (R == 0) return 0.0;
+        return V / R;
+    };
+
+    // electrical_power(voltage, current) -> P = VI
+    functions["electrical_power"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: electrical_power(V, I) expects 2 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1);
+    };
+
+    // electrical_energy(power, time) -> E = Pt
+    functions["electrical_energy"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: electrical_energy(P, t) expects 2 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1);
+    };
 }
