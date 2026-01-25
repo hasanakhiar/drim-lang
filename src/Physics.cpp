@@ -231,4 +231,26 @@ void registerPhysicsFunctions(std::map<std::string, NativeFn>& functions) {
         }
         return getNum(args, 0) * getNum(args, 1);
     };
+
+    // 6. Waves & Optics
+
+    // wave_speed(frequency, wavelength) -> v = f * lambda
+    functions["wave_speed"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: wave_speed(f, lambda) expects 2 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1);
+    };
+
+    // frequency(period) -> f = 1/T
+    functions["frequency"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) {
+             std::cout << "Error: frequency(T) expects 1 argument.\n";
+             return 0.0;
+        }
+        double T = getNum(args, 0);
+        if (T == 0) return 0.0;
+        return 1.0 / T;
+    };
 }
