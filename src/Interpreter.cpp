@@ -115,6 +115,13 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "lb_kg") return num * 0.453592;
         if (mode == "kg_lb") return num / 0.453592;
 
+        // Currency
+        if (mode == "usd_bdt") return num * 122;
+        if (mode == "bdt_usd") return num / 122;
+
+        if (mode == "usd_eur") return num * 0.92;
+        if (mode == "eur_usd") return num / 0.92;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
