@@ -35,7 +35,40 @@ Value parseInput(std::string text) {
     return text;
 }
 
+// Helper to extract double from Value
+double getDouble(const Value& v) {
+    if (std::holds_alternative<int>(v)) return (double)std::get<int>(v);
+    if (std::holds_alternative<double>(v)) return std::get<double>(v);
+    return 0.0;
+}
+
+Interpreter::Interpreter() {
+    // Register Native Functions here
+    // Example: nativeFunctions["test"] = ...
+}
+
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
+    if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
+        std::string funcName;
+        if (auto var = std::dynamic_pointer_cast<VariableExpr>(call->callee)) {
+            funcName = var->name.lexeme;
+        } else {
+             std::cerr << "Runtime Error: Can only call identifiers.\n";
+             exit(1);
+        }
+
+        if (nativeFunctions.count(funcName)) {
+            std::vector<Value> args;
+            for (auto arg : call->arguments) {
+                args.push_back(evaluate(arg));
+            }
+            return nativeFunctions[funcName](args);
+        }
+
+        std::cerr << "Runtime Error: Undefined function '" << funcName << "'\n";
+        exit(1);
+    }
+
     if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(expr)) {
         return lit->value;
     }

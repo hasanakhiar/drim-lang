@@ -34,6 +34,7 @@ enum TokenType {
     TOKEN_LPAREN,     // (
     TOKEN_RPAREN,     // )
     TOKEN_ASSIGN,     // =
+    TOKEN_COMMA,      // ,
 
     TOKEN_EOF,
     TOKEN_ERROR

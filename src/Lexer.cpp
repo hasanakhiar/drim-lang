@@ -20,6 +20,7 @@ void Lexer::scanToken() {
         case '(': addToken(TOKEN_LPAREN); break;
         case ')': addToken(TOKEN_RPAREN); break;
         case '=': addToken(TOKEN_ASSIGN); break;
+        case ',': addToken(TOKEN_COMMA); break;
 
         // Math
         case '+': addToken(TOKEN_PLUS); break;
