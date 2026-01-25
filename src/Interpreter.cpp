@@ -126,6 +126,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "mph_kmph") return num * 1.60934;
         if (mode == "kmph_mph") return num / 1.60934;
 
+        // Torque
+        if (mode == "nm_ftlb") return num * 0.737562;
+        if (mode == "ftlb_nm") return num / 0.737562;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
