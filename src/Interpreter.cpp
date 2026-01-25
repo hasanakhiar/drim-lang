@@ -95,6 +95,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "f_c") return (num - 32.0) * 5.0 / 9.0;
         if (mode == "c_f") return (num * 9.0 / 5.0) + 32.0;
 
+        // Pressure
+        if (mode == "psi_bar") return num * 0.0689476;
+        if (mode == "bar_psi") return num / 0.0689476;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
