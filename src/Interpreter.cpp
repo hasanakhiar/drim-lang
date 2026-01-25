@@ -83,6 +83,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
              exit(1);
         }
 
+        // Length
+        if (mode == "in_cm") return num * 2.54;
+        if (mode == "cm_in") return num / 2.54;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
