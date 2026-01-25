@@ -1,5 +1,6 @@
 #include "../include/Interpreter.h"
 #include "../include/Utils.h"
+#include "../include/Physics.h"
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -39,7 +40,37 @@ Value parseInput(std::string text) {
     return text;
 }
 
+// Helper to extract double from Value
+double getDouble(const Value& v) {
+    if (std::holds_alternative<int>(v)) return (double)std::get<int>(v);
+    if (std::holds_alternative<double>(v)) return std::get<double>(v);
+    return 0.0;
+}
+
+Interpreter::Interpreter(){}
+
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
+    if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
+        std::string funcName;
+        if (auto var = std::dynamic_pointer_cast<VariableExpr>(call->callee)) {
+            funcName = var->name.lexeme;
+        } else {
+             std::cerr << "Runtime Error: Can only call identifiers.\n";
+             exit(1);
+        }
+
+        Value args[255];
+        size_t count = 0;
+        for (auto arg : call->arguments) {
+            if (count >= 255) {
+                std::cerr << "Runtime Error: Too many arguments.\n";
+                exit(1);
+            }
+            args[count++] = evaluate(arg);
+        }
+        return execPhysics(funcName, args, count);
+    }
+
     if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(expr)) {
         return lit->value;
     }

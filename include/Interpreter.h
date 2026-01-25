@@ -16,6 +16,7 @@ class Interpreter {
     std::map<std::string, Value> memory;
 
 public:
+    Interpreter(); 
     void interpret(std::vector<std::shared_ptr<Stmt>> commands);
     Value evaluate(std::shared_ptr<Expr> expr);
 };

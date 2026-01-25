@@ -134,7 +134,22 @@ std::shared_ptr<Expr> Parser::primary() {
     }
 
     if (check(TOKEN_IDENTIFIER)) {
-        return std::make_shared<VariableExpr>(advance());
+        Token name = advance();
+        
+        // Check for Function Call: identifier followed by '('
+        if (check(TOKEN_LPAREN)) {
+            advance(); // Eat '('
+            std::vector<std::shared_ptr<Expr>> args;
+            if (!check(TOKEN_RPAREN)) {
+                do {
+                    args.push_back(expression());
+                } while (check(TOKEN_COMMA) && advance().type == TOKEN_COMMA);
+            }
+            Token paren = consume(TOKEN_RPAREN, "Expect ')' after arguments.");
+            return std::make_shared<CallExpr>(std::make_shared<VariableExpr>(name), paren, args);
+        }
+
+        return std::make_shared<VariableExpr>(name);
     }
 
     if (check(KW_CONVERT)) {
