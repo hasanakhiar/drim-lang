@@ -107,6 +107,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "j_cal") return num / 4184.0;
         if (mode == "cal_j") return num * 4184.0;
 
+        // Angles
+        if (mode == "deg_rad") return num * (M_PI / 180.0);
+        if (mode == "rad_deg") return num * (180.0 / M_PI);
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
