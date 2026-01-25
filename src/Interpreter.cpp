@@ -87,6 +87,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "in_cm") return num * 2.54;
         if (mode == "cm_in") return num / 2.54;
 
+        // Power
+        if (mode == "hp_kw") return num * 0.7457;
+        if (mode == "kw_hp") return num / 0.7457;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
