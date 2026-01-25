@@ -130,6 +130,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "nm_ftlb") return num * 0.737562;
         if (mode == "ftlb_nm") return num / 0.737562;
 
+        // G-Force
+        if (mode == "g_ms2") return num * 9.80665;
+        if (mode == "ms2_g") return num / 9.80665;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
