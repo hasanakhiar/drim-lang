@@ -44,6 +44,7 @@ double getDouble(const Value& v) {
 }
 
 Interpreter::Interpreter() {
+    //For loading all the Physics functions to the memory
     registerPhysicsFunctions(nativeFunctions);
 }
 
