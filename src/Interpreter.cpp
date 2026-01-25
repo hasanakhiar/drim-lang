@@ -47,10 +47,7 @@ double getDouble(const Value& v) {
     return 0.0;
 }
 
-Interpreter::Interpreter() {
-    //For loading all the Physics functions to the memory
-    registerPhysicsFunctions(nativeFunctions);
-}
+Interpreter::Interpreter(){}
 
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
     if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
@@ -62,16 +59,16 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
              exit(1);
         }
 
-        if (nativeFunctions.count(funcName)) {
-            std::vector<Value> args;
-            for (auto arg : call->arguments) {
-                args.push_back(evaluate(arg));
+        Value args[255];
+        size_t count = 0;
+        for (auto arg : call->arguments) {
+            if (count >= 255) {
+                std::cerr << "Runtime Error: Too many arguments.\n";
+                exit(1);
             }
-            return nativeFunctions[funcName](args);
+            args[count++] = evaluate(arg);
         }
-
-        std::cerr << "Runtime Error: Undefined function '" << funcName << "'\n";
-        exit(1);
+        return execPhysics(funcName, args, count);
     }
 
     if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(expr)) {

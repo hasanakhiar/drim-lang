@@ -12,14 +12,11 @@
 #include <string>
 #include <memory>
 
-#include <functional>
-
 class Interpreter {
     std::map<std::string, Value> memory;
-    std::map<std::string, std::function<Value(const std::vector<Value>&)>> nativeFunctions;
 
 public:
-    Interpreter(); // Constructor to register native functions
+    Interpreter(); 
     void interpret(std::vector<std::shared_ptr<Stmt>> commands);
     Value evaluate(std::shared_ptr<Expr> expr);
 };
