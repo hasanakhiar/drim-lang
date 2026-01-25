@@ -282,4 +282,16 @@ void registerPhysicsFunctions(std::map<std::string, NativeFn>& functions) {
         }
         return (getNum(args, 0) * 1.8) + 32.0;
     };
+
+    // Relativity
+    // mass_energy(mass) -> E = mc^2
+    functions["mass_energy"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) {
+             std::cout << "Error: mass_energy(m) expects 1 argument.\n";
+             return 0.0;
+        }
+        double m = getNum(args, 0);
+        double c = 299792458.0; 
+        return m * c * c;
+    };
 }
