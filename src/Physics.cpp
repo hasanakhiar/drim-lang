@@ -164,4 +164,30 @@ void registerPhysicsFunctions(std::map<std::string, NativeFn>& functions) {
         if (t == 0) return 0.0;
         return W / t;
     };
+
+    // 4. Circular Motion
+
+    // centripetal_force(mass, velocity, radius) -> F = mv^2/r
+    functions["centripetal_force"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 3) {
+             std::cout << "Error: centripetal_force(m, v, r) expects 3 arguments.\n";
+             return 0.0;
+        }
+        double m = getNum(args, 0);
+        double v = getNum(args, 1);
+        double r = getNum(args, 2);
+        if (r == 0) return 0.0;
+        return (m * v * v) / r;
+    };
+
+    // angular_speed(period) -> w = 2pi / T
+    functions["angular_speed"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) {
+             std::cout << "Error: angular_speed(T) expects 1 argument.\n";
+             return 0.0;
+        }
+        double T = getNum(args, 0);
+        if (T == 0) return 0.0;
+        return (2.0 * 3.1415926535) / T;
+    };
 }
