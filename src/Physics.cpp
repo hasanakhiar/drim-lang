@@ -71,4 +71,54 @@ void registerPhysicsFunctions(std::map<std::string, NativeFn>& functions) {
         double t = getNum(args, 2);
         return u + (a * t);
     };
+
+    // 2. Force & Mechanics
+
+    // force(mass, acceleration) -> F = ma
+    functions["force"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: force(m, a) expects 2 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1);
+    };
+
+    // weight(mass, gravity) -> W = mg
+    functions["weight"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: weight(m, g) expects 2 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1);
+    };
+
+    // pressure(force, area) -> P = F/A
+    functions["pressure"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: pressure(F, A) expects 2 arguments.\n";
+             return 0.0;
+        }
+        double F = getNum(args, 0);
+        double A = getNum(args, 1);
+        if (A == 0) return 0.0;
+        return F / A;
+    };
+
+    // momentum(mass, velocity) -> p = mv
+    functions["momentum"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: momentum(m, v) expects 2 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1);
+    };
+
+    // impulse(force, time) -> J = Ft
+    functions["impulse"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) {
+             std::cout << "Error: impulse(F, t) expects 2 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1);
+    };
 }
