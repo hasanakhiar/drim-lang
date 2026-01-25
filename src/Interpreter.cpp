@@ -111,6 +111,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "deg_rad") return num * (M_PI / 180.0);
         if (mode == "rad_deg") return num * (180.0 / M_PI);
 
+        // Mass
+        if (mode == "lb_kg") return num * 0.453592;
+        if (mode == "kg_lb") return num / 0.453592;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
