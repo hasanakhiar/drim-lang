@@ -122,6 +122,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (mode == "usd_eur") return num * 0.92;
         if (mode == "eur_usd") return num / 0.92;
 
+        // Speed
+        if (mode == "mph_kmph") return num * 1.60934;
+        if (mode == "kmph_mph") return num / 1.60934;
+
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
