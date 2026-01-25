@@ -253,4 +253,33 @@ void registerPhysicsFunctions(std::map<std::string, NativeFn>& functions) {
         if (T == 0) return 0.0;
         return 1.0 / T;
     };
+
+    // 7. Heat & Thermodynamics
+
+    // heat_energy(mass, specific_heat, delta_temp) -> Q = mcT
+    functions["heat_energy"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 3) {
+             std::cout << "Error: heat_energy(m, c, deltaT) expects 3 arguments.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) * getNum(args, 1) * getNum(args, 2);
+    };
+
+    // to_kelvin(celsius) -> K = C + 273.15
+    functions["to_kelvin"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) {
+             std::cout << "Error: to_kelvin(c) expects 1 argument.\n";
+             return 0.0;
+        }
+        return getNum(args, 0) + 273.15;
+    };
+
+    // to_fahrenheit(celsius) -> F = (9/5)C + 32
+    functions["to_fahrenheit"] = [](const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) {
+             std::cout << "Error: to_fahrenheit(c) expects 1 argument.\n";
+             return 0.0;
+        }
+        return (getNum(args, 0) * 1.8) + 32.0;
+    };
 }
