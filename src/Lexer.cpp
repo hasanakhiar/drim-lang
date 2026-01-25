@@ -20,6 +20,7 @@ void Lexer::scanToken() {
         case '(': addToken(TOKEN_LPAREN); break;
         case ')': addToken(TOKEN_RPAREN); break;
         case '=': addToken(TOKEN_ASSIGN); break;
+        case ',': addToken(TOKEN_COMMA); break;
 
         // Math
         case '+': addToken(TOKEN_PLUS); break;
@@ -60,7 +61,8 @@ void Lexer::identifier() {
     TokenType type = TOKEN_IDENTIFIER;
     if (text == "drim") type = KW_DRIM;
     if (text == "wake") type = KW_WAKE;
-    if (text == "type") type = KW_TYPE; 
+    if (text == "type") type = KW_TYPE;
+    if (text == "convert") type = KW_CONVERT;
 
     addToken(type);
 }
