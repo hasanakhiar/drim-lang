@@ -1,0 +1,113 @@
+// ============================================
+// DRIM LANGUAGE - COMPREHENSIVE TEST SUITE
+// ============================================
+
+wake("--- 1. VARIABLES & TYPES ---")
+// Testing Integers, Doubles, and Strings
+x = 100
+pi = 3.14159
+str = "DrimLang"
+
+wake(x)
+wake(pi)
+wake(str)
+
+// Testing Type Checking
+wake("Checking types:")
+type(x)     // Should print <type 'int'>
+type(pi)    // Should print <type 'float'>
+type(str)   // Should print <type 'string'>
+
+
+wake("\n--- 2. MATH & BITWISE OPERATIONS ---")
+// Testing Math Precedence (Multiplication before Addition)
+calc = 10 + 5 * 2
+wake("10 + 5 * 2 should be 20:")
+wake(calc)
+
+// Testing Power (^)
+sq = 5 ^ 2
+wake("5 squared is:")
+wake(sq)
+
+// Testing Bitwise Operations (Integers only)
+// 5 is 0101, 3 is 0011
+// 5 & 3 = 0001 (1)
+// 5 | 3 = 0111 (7)
+bit_and = 5 & 3
+bit_or = 5 | 3
+wake("5 & 3 (Bitwise AND):")
+wake(bit_and)
+wake("5 | 3 (Bitwise OR):")
+wake(bit_or)
+
+// Testing Shift
+shift_val = 1 << 4  // 1 becomes 10000 (16)
+wake("1 Left Shift 4:")
+wake(shift_val)
+
+
+wake("\n--- 3. LOGIC & CONTROL FLOW ---")
+a = 10
+b = 20
+
+// Test: AND / OR
+if a < 15 and b > 15 {
+    wake("Logic Test 1: AND passed (a < 15 and b > 15)")
+}
+
+if a > 50 or b == 20 {
+    wake("Logic Test 2: OR passed (b is 20)")
+}
+
+// Test: Nested IF and ELSE IF
+score = 85
+wake("Checking Grade Logic (Score 85):")
+
+if score > 90 {
+    wake("Grade: A")
+}
+else if score > 80 {
+    wake("Grade: B")
+    // Nested Block
+    if score >= 85 {
+        wake(" -> High B (Nested If Worked)")
+    }
+}
+else {
+    wake("Grade: C or lower")
+}
+
+
+wake("\n--- 4. UNIT CONVERSIONS (Built-in) ---")
+wake("1 inch to cm:")
+wake(convert(1, "in_cm"))
+
+wake("0 Celsius to Fahrenheit:")
+wake(convert(0, "c_f"))
+
+wake("1 kg to lbs:")
+wake(convert(1, "kg_lb"))
+
+wake("100 kmph to mph:")
+wake(convert(100, "kmph_mph"))
+
+wake("1 USD to BDT:")
+wake(2 + convert(1, "usd_bdt"))
+
+
+wake("\n--- 5. INPUT TEST ---")
+wake("Enter a number to double it:")
+// This will pause for user input
+drim(userNum)
+
+// Logic on user input
+if userNum > 0 {
+    doubled = userNum * 2
+    wake("Doubled value is:")
+    wake(doubled)
+} else {
+    wake("You entered zero or a negative number.")
+}
+
+wake("--- TEST COMPLETE ---")

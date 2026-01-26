@@ -30,6 +30,8 @@ private:
     char advance();
     char peek();
     bool isAtEnd();
+
+    bool match(char expected);
 };
 
 #endif

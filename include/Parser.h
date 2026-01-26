@@ -29,6 +29,12 @@ private:
 
     // Hierarchy of expression parsing
     std::shared_ptr<Expr> expression(); // Entry point
+    std::shared_ptr<Expr> logicOr();    
+    std::shared_ptr<Expr> logicAnd();   
+    std::shared_ptr<Expr> equality();   
+    std::shared_ptr<Expr> comparison(); 
+
+
     std::shared_ptr<Expr> bitwiseOr();
     std::shared_ptr<Expr> bitwiseAnd();
     std::shared_ptr<Expr> shift();
@@ -39,9 +45,15 @@ private:
     std::shared_ptr<Expr> primary();    // Handles numbers, vars, ( )
 
 
+    // --- Statement Parsing ---
+    std::shared_ptr<Stmt> statement();     // Decides if it's IF, PRINT, or ASSIGN
+    std::shared_ptr<Stmt> ifStatement();   // Parses if-else
+    std::vector<std::shared_ptr<Stmt>> block(); // Parses { ... }
+
     // Check current token
     Token peek();
-
+    Token peekNext(); 
+    
     // Consume current and move forward
     Token advance();
 

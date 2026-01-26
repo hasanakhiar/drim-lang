@@ -87,4 +87,20 @@ struct TypeStmt : Stmt {
     TypeStmt(std::shared_ptr<Expr> e) : expression(e) {}
 };
 
+// Represents a block of code: { ... }
+struct BlockStmt : Stmt {
+    std::vector<std::shared_ptr<Stmt>> statements;
+    BlockStmt(std::vector<std::shared_ptr<Stmt>> stmts) : statements(stmts) {}
+};
+
+struct IfStmt : Stmt {
+    std::shared_ptr<Expr> condition;
+    std::shared_ptr<Stmt> thenBranch;
+    std::shared_ptr<Stmt> elseBranch; // Can be nullptr if there is no 'else'
+
+    IfStmt(std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> thenB, std::shared_ptr<Stmt> elseB)
+        : condition(cond), thenBranch(thenB), elseBranch(elseB) {}
+};
+
+
 #endif

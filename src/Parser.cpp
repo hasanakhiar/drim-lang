@@ -10,6 +10,11 @@ Token Parser::peek() {
     return tokens[current];
 }
 
+Token Parser::peekNext() {
+    if (current + 1 >= tokens.size()) return tokens.back();
+    return tokens[current + 1];
+}
+
 Token Parser::advance() {
     if (current < tokens.size()) current++;
     return tokens[current - 1];
@@ -33,9 +38,55 @@ bool Parser::check(TokenType type) {
 
 
 // === EXPRESSION PARSING (Entry Point) ===
+
 std::shared_ptr<Expr> Parser::expression() {
-    return bitwiseOr();
+    return logicOr(); 
 }
+// 1. Logic OR (Lowest Priority among logic)
+std::shared_ptr<Expr> Parser::logicOr() {
+    std::shared_ptr<Expr> expr = logicAnd();
+    while (check(KW_OR)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = logicAnd();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+    return expr;
+}
+
+// 2. Logic AND
+std::shared_ptr<Expr> Parser::logicAnd() {
+    std::shared_ptr<Expr> expr = equality();
+    while (check(KW_AND)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = equality();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+    return expr;
+}
+
+// 3. Equality (==, !=)
+std::shared_ptr<Expr> Parser::equality() {
+    std::shared_ptr<Expr> expr = comparison();
+    while (check(TOKEN_EQUAL_EQUAL) || check(TOKEN_BANG_EQUAL)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = comparison();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+    return expr;
+}
+
+// 4. Comparison (<, >, <=, >=)
+std::shared_ptr<Expr> Parser::comparison() {
+    std::shared_ptr<Expr> expr = bitwiseOr(); // Chains to your existing bitwise logic
+    while (check(TOKEN_LESS) || check(TOKEN_GREATER) || 
+           check(TOKEN_LESS_EQUAL) || check(TOKEN_GREATER_EQUAL)) {
+        Token op = advance();
+        std::shared_ptr<Expr> right = bitwiseOr();
+        expr = std::make_shared<BinaryExpr>(expr, op, right);
+    }
+    return expr;
+}
+
 
 // === BITWISE OR (|) ===
 std::shared_ptr<Expr> Parser::bitwiseOr() {
@@ -175,50 +226,102 @@ std::shared_ptr<Expr> Parser::primary() {
     exit(1);
 }
 
-// === MAIN PARSE LOGIC UPDATED ===
+
 std::vector<std::shared_ptr<Stmt>> Parser::parse() {
     std::vector<std::shared_ptr<Stmt>> commands;
-
-    while (peek().type != TOKEN_EOF) {
-
-        if (peek().type == KW_DRIM) {
-            advance();
-            consume(TOKEN_LPAREN, "Expect '('");
-            Token varName = consume(TOKEN_IDENTIFIER, "Expect var name");
-            consume(TOKEN_RPAREN, "Expect ')'");
-            commands.push_back(std::make_shared<InputStmt>(varName));
-        }
-        else if (peek().type == KW_WAKE) {
-            advance();
-            consume(TOKEN_LPAREN, "Expect '(' after wake");
-
-            std::shared_ptr<Expr> value = expression();
-
-            consume(TOKEN_RPAREN, "Expect ')' after value");
-            commands.push_back(std::make_shared<PrintStmt>(value));
-        }
-        else if (peek().type == KW_TYPE) {
-            advance();   
-            consume(TOKEN_LPAREN, "Expect '(' after type");
-
-            std::shared_ptr<Expr> valueToCheck = expression();
-
-            consume(TOKEN_RPAREN, "Expect ')' after value");
-            commands.push_back(std::make_shared<TypeStmt>(valueToCheck));
-        }
-        else if (peek().type == TOKEN_IDENTIFIER &&
-                (current + 1 < tokens.size() && tokens[current+1].type == TOKEN_ASSIGN)) {
-
-            Token varName = advance();
-            advance(); // Eat '='
-
-            std::shared_ptr<Expr> value = expression();
-
-            commands.push_back(std::make_shared<AssignStmt>(varName, value));
-        }
-        else {
-            advance();
-        }
+    while (!isAtEnd()) {
+        auto stmt = statement();
+        if (stmt) commands.push_back(stmt);
     }
     return commands;
+}
+
+// Decides what kind of statement we are looking at
+std::shared_ptr<Stmt> Parser::statement() {
+    // 1. IF Statement
+    if (check(KW_IF)) {
+        return ifStatement();
+    }
+    // 2. BLOCK Statement { ... }
+    if (check(TOKEN_LBRACE)) {
+        return std::make_shared<BlockStmt>(block());
+    }
+    // 3. INPUT (drim)
+    if (check(KW_DRIM)) {
+        advance(); consume(TOKEN_LPAREN, "Expect '('");
+        Token name = consume(TOKEN_IDENTIFIER, "Expect var name");
+        consume(TOKEN_RPAREN, "Expect ')'");
+        return std::make_shared<InputStmt>(name);
+    }
+    // 4. PRINT (wake)
+    if (check(KW_WAKE)) {
+        advance(); consume(TOKEN_LPAREN, "Expect '('");
+        std::shared_ptr<Expr> val = expression();
+        consume(TOKEN_RPAREN, "Expect ')'");
+        return std::make_shared<PrintStmt>(val);
+    }
+    // 5. TYPE
+    if (check(KW_TYPE)) {
+         advance(); consume(TOKEN_LPAREN, "Expect '('");
+         std::shared_ptr<Expr> val = expression();
+         consume(TOKEN_RPAREN, "Expect ')'");
+         return std::make_shared<TypeStmt>(val);
+    }
+    // 6. ASSIGNMENT (var = val)
+    if (check(TOKEN_IDENTIFIER) && peekNext().type == TOKEN_ASSIGN) {
+        Token name = advance();
+        advance(); // Eat '='
+        std::shared_ptr<Expr> value = expression();
+        return std::make_shared<AssignStmt>(name, value);
+    }
+
+    // Fallback: Skip token to avoid infinite loop on error
+    advance();
+    return nullptr; 
+}
+
+std::shared_ptr<Stmt> Parser::ifStatement() {
+    consume(KW_IF, "Expect 'if'.");
+    
+    // Parse Condition
+    std::shared_ptr<Expr> condition = expression();
+
+    // Parse 'Then' Branch
+    consume(TOKEN_LBRACE, "Expect '{' after if condition."); 
+    std::vector<std::shared_ptr<Stmt>> thenStmts = block();
+    std::shared_ptr<Stmt> thenBranch = std::make_shared<BlockStmt>(thenStmts);
+
+    // Parse 'Else' Branch (Optional)
+    std::shared_ptr<Stmt> elseBranch = nullptr;
+    // if (check(KW_ELSE)) {
+    //     advance();
+    //     consume(TOKEN_LBRACE, "Expect '{' after else.");
+    //     std::vector<std::shared_ptr<Stmt>> elseStmts = block();
+    //     elseBranch = std::make_shared<BlockStmt>(elseStmts);
+    // }
+    if (check(KW_ELSE)) {
+        advance(); // Eat 'else'
+        if (check(KW_IF)) {
+            // Found "else if" -> Recursively parse the next IF statement
+            elseBranch = ifStatement(); 
+        } 
+        else {
+            // Found "else {" -> Parse the block normally
+            consume(TOKEN_LBRACE, "Expect '{' after else.");
+            std::vector<std::shared_ptr<Stmt>> elseStmts = block();
+            elseBranch = std::make_shared<BlockStmt>(elseStmts);
+        }
+    }
+    return std::make_shared<IfStmt>(condition, thenBranch, elseBranch);
+}
+
+std::vector<std::shared_ptr<Stmt>> Parser::block() {
+    std::vector<std::shared_ptr<Stmt>> stmts;
+    // Keep parsing until we hit '}' or EOF
+    while (!check(TOKEN_RBRACE) && !isAtEnd()) {
+        auto stmt = statement();
+        if (stmt) stmts.push_back(stmt);
+    }
+    consume(TOKEN_RBRACE, "Expect '}' after block.");
+    return stmts;
 }
