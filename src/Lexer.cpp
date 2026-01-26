@@ -27,7 +27,15 @@ void Lexer::scanToken() {
         case '+': addToken(TOKEN_PLUS); break;
         case '-': addToken(TOKEN_MINUS); break;
         case '*': addToken(TOKEN_STAR); break;
-        case '/': addToken(TOKEN_SLASH); break;
+        // Adding inline comments
+        case '/': 
+            if (match('/')) {
+                // A comment goes until the end of the line.
+                while (peek() != '\n' && !isAtEnd()) advance();
+            } else {
+                addToken(TOKEN_SLASH);
+            }
+            break;
         case '^': addToken(TOKEN_POW); break;
 
         // --- THE LOGIC OPERATORS (No Conflict!) ---
