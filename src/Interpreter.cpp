@@ -10,6 +10,12 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+bool isTruthy(const Value& v) {
+    if (std::holds_alternative<int>(v)) return std::get<int>(v) != 0;
+    if (std::holds_alternative<double>(v)) return std::get<double>(v) != 0.0;
+    if (std::holds_alternative<std::string>(v)) return !std::get<std::string>(v).empty();
+    return false; // Should not happen for these types
+}
 // Parse string inputs into int or double if possible
 Value parseInput(std::string text) {
     if (text.empty()) return text;
@@ -50,6 +56,8 @@ double getDouble(const Value& v) {
 Interpreter::Interpreter(){}
 
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
+    
+    // FUNCTION CALLS (Physics)
     if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
         std::string funcName;
         if (auto var = std::dynamic_pointer_cast<VariableExpr>(call->callee)) {
@@ -71,10 +79,12 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         return execPhysics(funcName, args, count);
     }
 
+    // Literals
     if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(expr)) {
         return lit->value;
     }
 
+    // VARIABLES
     if (auto var = std::dynamic_pointer_cast<VariableExpr>(expr)) {
         if (memory.count(var->name.lexeme)) {
             return memory[var->name.lexeme];
@@ -83,6 +93,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
+    // UNARY OPERATIONS (Bitwise NOT)
     if (auto una = std::dynamic_pointer_cast<UnaryExpr>(expr)) {
         Value rightVal = evaluate(una->right);
 
@@ -94,6 +105,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
+    // CONVERSIONS (conv_dist)
     if (auto conv = std::dynamic_pointer_cast<ConvertExpr>(expr)) {
         Value val = evaluate(conv->value);
         Value modeVal = evaluate(conv->mode);
@@ -114,6 +126,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
              exit(1);
         }
 
+        // --- CONVERSION LOGIC ---
         // Length
         if (mode == "in_cm") return num * 2.54;
         if (mode == "cm_in") return num / 2.54;
@@ -169,14 +182,41 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
+    // BINARY OPERATIONS (Math + Logic)
     if (auto bin = std::dynamic_pointer_cast<BinaryExpr>(expr)) {
         Value leftVal = evaluate(bin->left);
         Value rightVal = evaluate(bin->right);
 
+        // --- A. LOGIC OPERATORS (and, or) ---
+        if (bin->op.type == KW_AND) {
+            return (isTruthy(leftVal) && isTruthy(rightVal)) ? 1 : 0;
+        }
+        if (bin->op.type == KW_OR) {
+            return (isTruthy(leftVal) || isTruthy(rightVal)) ? 1 : 0;
+        }
+
         // Numeric operations
         bool leftIsNum = std::holds_alternative<int>(leftVal) || std::holds_alternative<double>(leftVal); 
         bool rightIsNum = std::holds_alternative<int>(rightVal) || std::holds_alternative<double>(rightVal);
+        
+        // Convert to doubles for easy comparison
+        double l = 0.0, r = 0.0;
+        if (leftIsNum) l = std::holds_alternative<int>(leftVal) ? std::get<int>(leftVal) : std::get<double>(leftVal);
+        if (rightIsNum) r = std::holds_alternative<int>(rightVal) ? std::get<int>(rightVal) : std::get<double>(rightVal);
 
+        // --- B. COMPARISONS (<, >, ==, !=) ---
+        if (leftIsNum && rightIsNum) {
+            switch (bin->op.type) {
+                case TOKEN_LESS:          return (l < r) ? 1 : 0;
+                case TOKEN_GREATER:       return (l > r) ? 1 : 0;
+                case TOKEN_LESS_EQUAL:    return (l <= r) ? 1 : 0;
+                case TOKEN_GREATER_EQUAL: return (l >= r) ? 1 : 0;
+                case TOKEN_EQUAL_EQUAL:   return (l == r) ? 1 : 0;
+                case TOKEN_BANG_EQUAL:    return (l != r) ? 1 : 0;
+            }
+        }
+
+        // MATH OPERATIONS (+, -, *, /) ---
         if (leftIsNum && rightIsNum) {
             bool useDouble = std::holds_alternative<double>(leftVal) || std::holds_alternative<double>(rightVal);
 
@@ -229,31 +269,50 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
-    return 0;
+    return 0; 
 }
 
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
     for (auto cmd : commands) {
+        if (!cmd) continue;
 
-        if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
+        // IF STATEMENT
+        if (auto ifStmt = std::dynamic_pointer_cast<IfStmt>(cmd)) {
+            Value cond = evaluate(ifStmt->condition);
+            if (isTruthy(cond)) {
+                // Execute 'Then' (It's usually a BlockStmt)
+                std::vector<std::shared_ptr<Stmt>> wrapper = { ifStmt->thenBranch };
+                interpret(wrapper); // Recursive call
+            } else if (ifStmt->elseBranch != nullptr) {
+                // Execute 'Else'
+                std::vector<std::shared_ptr<Stmt>> wrapper = { ifStmt->elseBranch };
+                interpret(wrapper);
+            }
+        }
+        // BLOCK STATEMENT { ... }
+        else if (auto block = std::dynamic_pointer_cast<BlockStmt>(cmd)) {
+            interpret(block->statements); // Recursively execute the list inside
+        }
+        // Input
+        else if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
             std::cout << "drim input " << input->name.lexeme << ": ";
             if (std::getline(std::cin, userText)) {
                 memory[input->name.lexeme] = parseInput(userText);
             }
         }
-
+        // Assignment
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
             Value val = evaluate(assign->value);
             memory[assign->name.lexeme] = val;
         }
-
+        // PRINT (wake)
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
             Value output = evaluate(print->expression);
             printValue(output);
             std::cout << "\n";
         }
-
+        //TYPE CHECK
         else if (auto typeStmt = std::dynamic_pointer_cast<TypeStmt>(cmd)) {
             Value valToCheck = evaluate(typeStmt->expression);
 
