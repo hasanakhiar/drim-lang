@@ -19,7 +19,8 @@ void Lexer::scanToken() {
     switch (c) {
         case '(': addToken(TOKEN_LPAREN); break;
         case ')': addToken(TOKEN_RPAREN); break;
-        case '=': addToken(TOKEN_ASSIGN); break;
+        case '{': addToken(TOKEN_LBRACE); break;
+        case '}': addToken(TOKEN_RBRACE); break;
         case ',': addToken(TOKEN_COMMA); break;
 
         // Math
@@ -29,17 +30,46 @@ void Lexer::scanToken() {
         case '/': addToken(TOKEN_SLASH); break;
         case '^': addToken(TOKEN_POW); break;
 
+        // --- THE LOGIC OPERATORS (No Conflict!) ---
+
+    case '=':
+        // Checks for ==, otherwise it's =
+        addToken(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_ASSIGN);
+        break;
+
+    case '!':
+        // Checks for !=, otherwise it's Error (or standalone ! if you support NOT)
+        addToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_ERROR);
+        break;
+
+    case '<':
+        // LOGIC: Check <= first, then <<, otherwise <
+        if (match('=')) {
+            addToken(TOKEN_LESS_EQUAL);
+        } else if (match('<')) {
+            addToken(TOKEN_LSHIFT);
+        } else {
+            addToken(TOKEN_LESS);
+        }
+        break;
+
+    case '>':
+        // LOGIC: Check >= first, then >>, otherwise >
+        if (match('=')) {
+            addToken(TOKEN_GREATER_EQUAL);
+        } else if (match('>')) {
+            addToken(TOKEN_RSHIFT);
+        } else {
+            addToken(TOKEN_GREATER);
+        }
+        break;
+
         // Bitwise
         case '&': addToken(TOKEN_BIT_AND); break;
         case '|': addToken(TOKEN_BIT_OR); break;
         case '~': addToken(TOKEN_BIT_NOT); break;
-        case '<': 
-            if(peek() == '<') { advance(); addToken(TOKEN_LSHIFT); }
-            break;
-        case '>':
-             if(peek() == '>') { advance(); addToken(TOKEN_RSHIFT); }
-             break;
 
+        // --- WHITESPACE & NEWLINES ---
         case ' ':
         case '\r':
         case '\t': break;
@@ -63,6 +93,11 @@ void Lexer::identifier() {
     if (text == "wake") type = KW_WAKE;
     if (text == "type") type = KW_TYPE;
     if (text == "convert") type = KW_CONVERT;
+
+    if (text == "if")   type = KW_IF;
+    if (text == "else") type = KW_ELSE;
+    if (text == "and")  type = KW_AND;
+    if (text == "or")   type = KW_OR;
 
     addToken(type);
 }
@@ -111,4 +146,12 @@ char Lexer::peek(){
 
 bool Lexer::isAtEnd(){
     return current >= source.length(); 
+}
+
+bool Lexer::match(char expected) {
+    if (isAtEnd()) return false;
+    if (source[current] != expected) return false;
+
+    current++; // Consuming the characters
+    return true;
 }
