@@ -1,0 +1,20 @@
+i = 10
+j = 15
+
+wake("Testing Logic:")
+
+if i < 11 and j < 20 {
+    wake("Test 1 Passed: i < 11 AND j < 20")
+}
+
+if i > 50 or j == 15 {
+    wake("Test 2 Passed: j is 15 (OR worked)")
+} else {
+    wake("Test 2 Failed")
+}
+
+if (i < 5) {
+    wake("Test 3 Failed")
+} else {
+    wake("Test 3 Passed: Else block executed")
+}
