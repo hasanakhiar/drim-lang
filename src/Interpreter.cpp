@@ -296,7 +296,7 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
         // Input
         else if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
-            std::cout << "drim input " << input->name.lexeme << ": ";
+            //std::cout << "drim input " << input->name.lexeme << ": ";
             if (std::getline(std::cin, userText)) {
                 memory[input->name.lexeme] = parseInput(userText);
             }
