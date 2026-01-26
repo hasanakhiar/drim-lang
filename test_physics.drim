@@ -1,0 +1,19 @@
+s = speed(100, 2)
+wake("Speed (100, 2):")
+wake(s)
+
+f = force(10, 9.8)
+wake("Force (10, 9.8):")
+wake(f)
+
+final = final_velocity(10, 9.8, 2)
+wake("Final velocity (10, 9.8, 2):")
+wake(final)
+
+k = to_kelvin(0)
+wake("0 C to K:")
+wake(k)
+
+fah = to_fahrenheit(0)
+wake("0 C to F:")
+wake(fah)

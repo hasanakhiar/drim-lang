@@ -1,0 +1,14 @@
+wake("1 inch to cm:")
+wake(convert(1, "in_cm"))
+
+wake("0 Celsius to Fahrenheit:")
+wake(convert(0, "c_f"))
+
+wake("1 kg to lbs:")
+wake(convert(1, "kg_lb"))
+
+wake("100 kmph to mph:")
+wake(convert(100, "kmph_mph"))
+
+wake("1 USD to BDT:")
+wake(2 + convert(1, "usd_bdt"))
