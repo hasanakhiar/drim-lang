@@ -293,13 +293,25 @@ std::shared_ptr<Stmt> Parser::ifStatement() {
 
     // Parse 'Else' Branch (Optional)
     std::shared_ptr<Stmt> elseBranch = nullptr;
+    // if (check(KW_ELSE)) {
+    //     advance();
+    //     consume(TOKEN_LBRACE, "Expect '{' after else.");
+    //     std::vector<std::shared_ptr<Stmt>> elseStmts = block();
+    //     elseBranch = std::make_shared<BlockStmt>(elseStmts);
+    // }
     if (check(KW_ELSE)) {
-        advance();
-        consume(TOKEN_LBRACE, "Expect '{' after else.");
-        std::vector<std::shared_ptr<Stmt>> elseStmts = block();
-        elseBranch = std::make_shared<BlockStmt>(elseStmts);
+        advance(); // Eat 'else'
+        if (check(KW_IF)) {
+            // Found "else if" -> Recursively parse the next IF statement
+            elseBranch = ifStatement(); 
+        } 
+        else {
+            // Found "else {" -> Parse the block normally
+            consume(TOKEN_LBRACE, "Expect '{' after else.");
+            std::vector<std::shared_ptr<Stmt>> elseStmts = block();
+            elseBranch = std::make_shared<BlockStmt>(elseStmts);
+        }
     }
-
     return std::make_shared<IfStmt>(condition, thenBranch, elseBranch);
 }
 
