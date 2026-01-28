@@ -1,0 +1,20 @@
+wake(a)
+x = 10
+y = 20.5
+z = x * y
+str = "a"
+
+if x != y{
+    wake("ye")
+}
+
+type(z)
+wake(z)
+wake(str)
+
+// -- outputting unknown variable
+
+// Changing type of x, which was previously integer
+x = 100.1
+type(x)
+wake(x)

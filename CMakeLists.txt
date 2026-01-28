@@ -15,4 +15,4 @@ set(SOURCES
         src/Physics.cpp
 )
 
-add_executable(test ${SOURCES})
+add_executable(drim ${SOURCES})
