@@ -7,3 +7,5 @@
 *.toc
 *.synctex.gz
 *.bbl
+*.xdv
+*.DS_Store
