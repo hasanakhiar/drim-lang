@@ -1,9 +1,0 @@
-\contentsline {section}{\numberline {1}Project Overview}{2}{section.1}%
-\contentsline {section}{\numberline {2}Motivation Behind the Project}{3}{section.2}%
-\contentsline {section}{\numberline {3}User Requirement}{4}{section.3}%
-\contentsline {section}{\numberline {4}Key Feature}{5}{section.4}%
-\contentsline {section}{\numberline {5}Flow Chart/Class Diagram}{6}{section.5}%
-\contentsline {section}{\numberline {6}Tools and Technologies}{8}{section.6}%
-\contentsline {section}{\numberline {7}Proposed Timeline}{9}{section.7}%
-\contentsline {section}{\numberline {8}Suggestions Received}{10}{section.8}%
-\contentsline {section}{\numberline {9}Links}{11}{section.9}%
