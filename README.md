@@ -1,6 +1,6 @@
 # Drim Lang
 
-Drim Lang is a custom interpreted programming language written in C++. It features a clean syntax for mathematical operations, logic control, and specialized built-in functions for physics calculations and unit conversions.
+Drim Lang is a custom-interpreted programming language written in C++. It features a clean syntax for mathematical operations, logic control, and specialized built-in functions for physics calculations and unit conversions (for now).
 
 ## Features
 
