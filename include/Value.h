@@ -6,7 +6,7 @@
 #include <iostream>
 
 // Container
-using Value = std::variant<int, double, std::string>;
+using Value = std::variant<int, double, std::string, bool>;
 
 // Printer Helper
 inline void printValue(const Value& v) {
@@ -16,6 +16,8 @@ inline void printValue(const Value& v) {
         std::cout << std::get<double>(v);
     else if (std::holds_alternative<std::string>(v)) 
         std::cout << std::get<std::string>(v);
+    else if (std::holds_alternative<bool>(v))
+        std::cout << (std::get<bool>(v) ? "true" : "false");
 }
 
 #endif

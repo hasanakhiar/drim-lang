@@ -11,7 +11,8 @@
 #endif
 
 bool isTruthy(const Value& v) {
-    if (std::holds_alternative<int>(v)) return std::get<int>(v) != 0;
+    if (std::holds_alternative<bool>(v)) return std::get<bool>(v);
+    if (std::holds_alternative<int>(v)) return std::get<int>(v) != 0; // So lines like if (5) {...} is still possible
     if (std::holds_alternative<double>(v)) return std::get<double>(v) != 0.0;
     if (std::holds_alternative<std::string>(v)) return !std::get<std::string>(v).empty();
     return false; // Should not happen for these types
@@ -189,10 +190,10 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
         // --- A. LOGIC OPERATORS (and, or) ---
         if (bin->op.type == KW_AND) {
-            return (isTruthy(leftVal) && isTruthy(rightVal)) ? 1 : 0;
+            return (isTruthy(leftVal) && isTruthy(rightVal));
         }
         if (bin->op.type == KW_OR) {
-            return (isTruthy(leftVal) || isTruthy(rightVal)) ? 1 : 0;
+            return (isTruthy(leftVal) || isTruthy(rightVal));
         }
 
         // Numeric operations
@@ -207,13 +208,21 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         // --- B. COMPARISONS (<, >, ==, !=) ---
         if (leftIsNum && rightIsNum) {
             switch (bin->op.type) {
-                case TOKEN_LESS:          return (l < r) ? 1 : 0;
-                case TOKEN_GREATER:       return (l > r) ? 1 : 0;
-                case TOKEN_LESS_EQUAL:    return (l <= r) ? 1 : 0;
-                case TOKEN_GREATER_EQUAL: return (l >= r) ? 1 : 0;
-                case TOKEN_EQUAL_EQUAL:   return (l == r) ? 1 : 0;
-                case TOKEN_BANG_EQUAL:    return (l != r) ? 1 : 0;
+                case TOKEN_LESS:          return (l < r);
+                case TOKEN_GREATER:       return (l > r);
+                case TOKEN_LESS_EQUAL:    return (l <= r);
+                case TOKEN_GREATER_EQUAL: return (l >= r);
+                case TOKEN_EQUAL_EQUAL:   return (l == r);
+                case TOKEN_BANG_EQUAL:    return (l != r);
             }
+        }
+
+        // General equality (e.g. bool vs bool, string vs string, or type mismatch)
+        if (bin->op.type == TOKEN_EQUAL_EQUAL) {
+            return leftVal == rightVal;
+        }
+        if (bin->op.type == TOKEN_BANG_EQUAL) {
+            return leftVal != rightVal;
         }
 
         // MATH OPERATIONS (+, -, *, /) ---
@@ -259,7 +268,8 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         if (bin->op.type == TOKEN_PLUS) {
             auto toStr = [](const Value& v) -> std::string {
                 if (std::holds_alternative<int>(v)) return std::to_string(std::get<int>(v));
-                if (std::holds_alternative<double>(v)) return std::to_string(std::get<double>(v));        
+                if (std::holds_alternative<double>(v)) return std::to_string(std::get<double>(v));
+                if (std::holds_alternative<bool>(v)) return std::get<bool>(v) ? "true" : "false";        
                 return std::get<std::string>(v);
             };
             return toStr(leftVal) + toStr(rightVal);
@@ -319,6 +329,7 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
             if (std::holds_alternative<int>(valToCheck)) std::cout << "<type 'int'>\n";
             else if (std::holds_alternative<double>(valToCheck)) std::cout << "<type 'float'>\n";
             else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";   
+            else if (std::holds_alternative<bool>(valToCheck)) std::cout << "<type 'bool'>\n";
         }
     }
 }

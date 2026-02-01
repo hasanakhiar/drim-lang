@@ -106,6 +106,9 @@ void Lexer::identifier() {
     if (text == "else") type = KW_ELSE;
     if (text == "and")  type = KW_AND;
     if (text == "or")   type = KW_OR;
+    
+    if (text == "true") type = TOKEN_TRUE;
+    if (text == "false") type = TOKEN_FALSE;
 
     addToken(type);
 }

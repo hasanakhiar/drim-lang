@@ -184,6 +184,15 @@ std::shared_ptr<Expr> Parser::primary() {
         return std::make_shared<LiteralExpr>(advance().lexeme);
     }
 
+    if (check(TOKEN_TRUE)) {
+        advance();
+        return std::make_shared<LiteralExpr>(true);
+    }
+    if (check(TOKEN_FALSE)) {
+        advance();
+        return std::make_shared<LiteralExpr>(false);
+    }
+
     if (check(TOKEN_IDENTIFIER)) {
         Token name = advance();
         

@@ -41,6 +41,8 @@ enum TokenType {
     TOKEN_STRING,     // "hello"
     TOKEN_INT,        // 123
     TOKEN_DOUBLE,
+    TOKEN_TRUE,
+    TOKEN_FALSE,
 
     // Syntax
     TOKEN_LPAREN,     // (

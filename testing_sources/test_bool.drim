@@ -1,0 +1,43 @@
+
+// Test Boolean Literals and Printing
+wake("--- Boolean Literals ---")
+x = true
+y = false
+wake(x)
+wake(y)
+
+// Test Type Checking
+wake("--- Type Checking ---")
+type(x)
+type(123)
+
+// Test Logic Operators
+wake("--- Logic Operators ---")
+wake(true and true)
+wake(true and false)
+wake(false or true)
+wake(false or false)
+
+// Test Equality
+wake("--- Equality ---")
+wake(true == true)
+wake(true != false)
+wake(true == false)
+wake(1 == 1)
+wake("hello" == "hello")
+wake(true == 1) 
+
+// Test If Statement
+wake("--- If Statement ---")
+if (x) {
+    wake("x is true")
+}
+if (y) {
+    wake("y is true (should not print)")
+} else {
+    wake("y is false")
+}
+
+// Test String Concatenation
+wake("--- String Concatenation ---")
+wake("Value is: " + x)
