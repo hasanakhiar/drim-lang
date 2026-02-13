@@ -54,7 +54,9 @@ double getDouble(const Value& v) {
     return 0.0;
 }
 
-Interpreter::Interpreter(){}
+Interpreter::Interpreter() {
+    scope = std::make_shared<Scope>();
+}
 
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
     
@@ -87,11 +89,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
     // VARIABLES
     if (auto var = std::dynamic_pointer_cast<VariableExpr>(expr)) {
-        if (memory.count(var->name.lexeme)) {
-            return memory[var->name.lexeme];
-        }
-        std::cerr << "Runtime Error: Undefined variable '" << var->name.lexeme << "'\n";
-        exit(1);
+        return scope->get(var->name);
     }
 
     // UNARY OPERATIONS (Bitwise NOT)
@@ -286,6 +284,8 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
     for (auto cmd : commands) {
         if (!cmd) continue;
 
+
+
         // IF STATEMENT
         if (auto ifStmt = std::dynamic_pointer_cast<IfStmt>(cmd)) {
             Value cond = evaluate(ifStmt->condition);
@@ -301,20 +301,24 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
         }
         // BLOCK STATEMENT { ... }
         else if (auto block = std::dynamic_pointer_cast<BlockStmt>(cmd)) {
-            interpret(block->statements); // Recursively execute the list inside
+            std::shared_ptr<Scope> previous = scope;
+            scope = std::make_shared<Scope>(previous);
+            
+            interpret(block->statements);
+            
+            scope = previous;
         }
         // Input
         else if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
-            //std::cout << "drim input " << input->name.lexeme << ": ";
             if (std::getline(std::cin, userText)) {
-                memory[input->name.lexeme] = parseInput(userText);
+                scope->assign(input->name, parseInput(userText));
             }
         }
         // Assignment
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
             Value val = evaluate(assign->value);
-            memory[assign->name.lexeme] = val;
+            scope->assign(assign->name, val);
         }
         // PRINT (wake)
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {

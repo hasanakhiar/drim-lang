@@ -246,14 +246,25 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
 }
 
 // Decides what kind of statement we are looking at
+
 std::shared_ptr<Stmt> Parser::statement() {
+
     // 1. IF Statement
+
     if (check(KW_IF)) {
+
         return ifStatement();
+
     }
+
     // 2. BLOCK Statement { ... }
+
     if (check(TOKEN_LBRACE)) {
+
+        advance(); // Consume '{'
+
         return std::make_shared<BlockStmt>(block());
+
     }
     // 3. INPUT (drim)
     if (check(KW_DRIM)) {
