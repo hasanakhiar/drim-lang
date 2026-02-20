@@ -7,13 +7,13 @@
 
 #include "AST.h"
 #include "Value.h"
+#include "Scope.h"
 #include <vector>
-#include <map>
 #include <string>
 #include <memory>
 
 class Interpreter {
-    std::map<std::string, Value> memory;
+    std::shared_ptr<Scope> scope;
 
 public:
     Interpreter(); 

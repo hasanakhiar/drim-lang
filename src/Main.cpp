@@ -26,17 +26,30 @@ int main(int argc, char* argv[]) {
     buffer << file.rdbuf();
     std::string source = buffer.str();
 
-    //  Lexer
-    Lexer lexer(source);
-    lexer.scanTokens();
+        //  Lexer
 
-    //  Parser
-    Parser parser(lexer.tokens);
-    auto commands = parser.parse();
+        Lexer lexer(source);
 
-    //  Interpreter
-    Interpreter interpreter;
-    interpreter.interpret(commands);
+        lexer.scanTokens();
+
+    
+
+        //  Parser
+
+        Parser parser(lexer.tokens);
+
+        auto commands = parser.parse();
+
+    
+
+        //  Interpreter
+
+        Interpreter interpreter;
+
+        interpreter.interpret(commands);
+
+    
+
 
     return 0;
 }
