@@ -103,4 +103,23 @@ struct IfStmt : Stmt {
 };
 
 
+// For func myFunc(a, b) {}
+struct FunctionStmt : Stmt {
+    Token name;
+    std::vector<Token> params;
+    std::vector<std::shared_ptr<Stmt>> body; // the whole block/scope of INS (body)
+    FunctionStmt(Token n, std::vector<Token> p, std::vector<std::shared_ptr<Stmt>> b)
+        : name(n), params(p), body(b) {}
+};
+
+// Command: return x + y
+struct ReturnStmt : Stmt {
+    Token keyword; // storing token just for error handling feedback
+    std::shared_ptr<Expr> value;
+
+    ReturnStmt(Token k, std::shared_ptr<Expr> v) : keyword(k), value(v) {}
+};
+
+
+
 #endif
