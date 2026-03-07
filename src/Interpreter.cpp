@@ -59,8 +59,8 @@ Interpreter::Interpreter() {
 }
 
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
-    
-    // FUNCTION CALLS (Physics)
+
+    // FUNCTION CALLS
     if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
         std::string funcName;
         if (auto var = std::dynamic_pointer_cast<VariableExpr>(call->callee)) {
@@ -68,6 +68,49 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         } else {
              std::cerr << "Runtime Error: Can only call identifiers.\n";
              exit(1);
+        }
+
+
+        // evaluate all the arguments first
+        std::vector<Value> argsValues;
+        for (auto arg : call->arguments) {
+            argsValues.push_back(evaluate(arg));
+        }
+
+        // check if its a user-defined func
+        if (userFunctions.count(funcName)) {
+            auto func = userFunctions[funcName];
+
+            // validate arg count
+            if (argsValues.size() != func->params.size()) {
+                std::cerr << "Runtime Error: Expected " << func->params.size() << " arguments but got " << argsValues.size() << ".\n";
+                exit(1);
+            }
+
+            // create a new LOCAL SCOPE for the func exec
+            // where parent = current scope (hopefully parent)
+
+            auto functionScope = std::make_shared<Scope>(scope);
+
+            // bind passed args to the func's local scope
+            for (size_t i = 0; i < argsValues.size(); i++) {
+                functionScope->assign(func->params[i], argsValues[i]);
+            }
+
+            // switch to the function's scope to run the body
+            // cus we are on the parent's body rn
+
+            auto previousScope = scope;
+            this->scope = functionScope;
+
+            Value result = 0;
+            try {
+                interpret(func->body);
+            } catch (ReturnValue& rv) {
+                result = rv.value; // Catch the return Value
+            }
+            this->scope = previousScope;
+            return result;
         }
 
         Value args[255];
@@ -281,10 +324,24 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 }
 
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
-    for (auto cmd : commands) {
+    for (auto cmd : commands) { // cmd = every line of code
         if (!cmd) continue;
 
 
+        // Save Function Definition
+        if (auto funcStmt = std::dynamic_pointer_cast<FunctionStmt>(cmd)) {
+            userFunctions[funcStmt->name.lexeme] = funcStmt; // map -> (name, ptrToFunc)
+            continue;
+        }
+
+        // Handle Return
+        if (auto returnStmt = std::dynamic_pointer_cast<ReturnStmt>(cmd)) {
+            Value val = 0; // Default return 0
+            if (returnStmt->value) {
+                val = evaluate(returnStmt->value);
+            }
+            throw ReturnValue(val); // Jump out of the scope/ func body
+        }
 
         // IF STATEMENT
         if (auto ifStmt = std::dynamic_pointer_cast<IfStmt>(cmd)) {

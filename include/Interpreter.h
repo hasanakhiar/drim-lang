@@ -11,9 +11,19 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <map>
+
+// calling this when we hitting return
+struct ReturnValue {
+    Value value;
+    ReturnValue(Value v) : value(v) {}
+};
 
 class Interpreter {
     std::shared_ptr<Scope> scope;
+
+    // map to store all the user defined function
+    std::map<std::string, std::shared_ptr<FunctionStmt>> userFunctions;
 
 public:
     Interpreter(); 
