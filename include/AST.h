@@ -9,7 +9,6 @@
 #include "Value.h"
 #include <memory>  
 #include <vector>
-#include <string>
 
 // Everything that "Does something" is a Stmt (Statement)
 struct Stmt {
@@ -118,6 +117,14 @@ struct ReturnStmt : Stmt {
     std::shared_ptr<Expr> value;
 
     ReturnStmt(Token k, std::shared_ptr<Expr> v) : keyword(k), value(v) {}
+};
+
+// a stmt that just evaluates an expr and discards the result
+// for lines like : user_func(param)
+
+struct ExprStmt : Stmt {
+    std::shared_ptr<Expr> expression;
+    ExprStmt(std::shared_ptr<Expr> e) : expression(e) {}
 };
 
 

@@ -1,5 +1,4 @@
 #include "../include/Interpreter.h"
-#include "../include/Utils.h"
 #include "../include/Physics.h"
 #include <iostream>
 #include <string>
@@ -391,6 +390,10 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
             else if (std::holds_alternative<double>(valToCheck)) std::cout << "<type 'float'>\n";
             else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";   
             else if (std::holds_alternative<bool>(valToCheck)) std::cout << "<type 'bool'>\n";
+        }
+        // if Stmt is just a EXPR
+        else if (auto exprStmt = std::dynamic_pointer_cast<ExprStmt>(cmd)) {
+            evaluate(exprStmt->expression);
         }
     }
 }

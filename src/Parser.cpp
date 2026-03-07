@@ -304,9 +304,10 @@ std::shared_ptr<Stmt> Parser::statement() {
         return std::make_shared<AssignStmt>(name, value);
     }
 
-    // Fallback: Skip token to avoid infinite loop on error
-    advance();
-    return nullptr; 
+    // REPLACED SKIP FALLBACK
+    std::shared_ptr<Expr> expr = expression();
+    return std::make_shared<ExprStmt>(expr);
+
 }
 
 std::shared_ptr<Stmt> Parser::ifStatement() {
