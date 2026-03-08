@@ -116,12 +116,12 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
         Value args[255];
         size_t count = 0;
-        for (auto arg : call->arguments) {
+        for (auto arg : argsValues) {
             if (count >= 255) {
                 std::cerr << "Runtime Error: Too many arguments.\n";
                 exit(1);
             }
-            args[count++] = evaluate(arg);
+            args[count++] = arg;
         }
         return execPhysics(funcName, args, count);
     }
