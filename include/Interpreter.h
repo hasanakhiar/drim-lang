@@ -22,9 +22,6 @@ struct ReturnValue {
 class Interpreter {
     std::shared_ptr<Scope> scope;
 
-    // map to store all the user defined function
-    std::map<std::string, std::shared_ptr<FunctionStmt>> userFunctions;
-
 public:
     Interpreter(); 
     void interpret(std::vector<std::shared_ptr<Stmt>> commands);

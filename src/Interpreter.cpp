@@ -76,9 +76,11 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             argsValues.push_back(evaluate(arg));
         }
 
+        std::shared_ptr<FunctionStmt> func = scope->getFunc(funcName);
+
         // check if its a user-defined func
-        if (userFunctions.count(funcName)) {
-            auto func = userFunctions[funcName];
+        if (func) {
+            //auto func = userFunctions[funcName];
 
             // validate arg count
             if (argsValues.size() != func->params.size()) {
@@ -329,7 +331,7 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
 
         // Save Function Definition
         if (auto funcStmt = std::dynamic_pointer_cast<FunctionStmt>(cmd)) {
-            userFunctions[funcStmt->name.lexeme] = funcStmt; // map -> (name, ptrToFunc)
+            scope->defineFunc(funcStmt->name.lexeme, funcStmt); // map -> (name, ptrToFunc)
             continue;
         }
 

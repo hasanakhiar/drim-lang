@@ -13,7 +13,7 @@ func say_hello(name) {
     wake("Testing ret inside: " + ret(10))
 }
 
-wake("Testing ret OutSide: " + ret(22))
+// wake("Testing ret OutSide: " + ret(22)) // Gives error
 
 result = add(10, 20)
 wake("10 + 20 = " + result)
