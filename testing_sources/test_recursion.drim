@@ -11,3 +11,4 @@ f2 = fib(2)
 wake("fib(2) = " + f2)
 f14 = fib(14)
 wake("fib(14) = " + f14)
+return

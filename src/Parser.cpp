@@ -381,7 +381,13 @@ std::shared_ptr<Stmt> Parser::returnStatement() {
 
     // try to find value after return, for non-void function
     // if void func, just skip the "value", just consume return
-    if (!check(TOKEN_RBRACE) && !isAtEnd()) {
+
+    //if (!check(TOKEN_RBRACE) && !isAtEnd()) {
+
+    //only parse expr if the next token can actually be a expr
+    if (check(TOKEN_INT) || check(TOKEN_DOUBLE) || check(TOKEN_STRING) ||
+        check(TOKEN_TRUE) || check(TOKEN_FALSE) || check(TOKEN_IDENTIFIER) ||
+        check(KW_CONVERT) || check(TOKEN_LPAREN) || check(TOKEN_BIT_NOT)){
         value = expression();
     }
 

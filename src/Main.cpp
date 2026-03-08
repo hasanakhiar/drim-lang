@@ -46,7 +46,12 @@ int main(int argc, char* argv[]) {
 
         Interpreter interpreter;
 
+    //try catch in case user passes "return" in the main
+    try{
         interpreter.interpret(commands);
+    }catch(ReturnValue& rv) {
+        return 0;
+    }
 
     
 
