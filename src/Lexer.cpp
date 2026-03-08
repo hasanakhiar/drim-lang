@@ -27,6 +27,7 @@ void Lexer::scanToken() {
         case '+': addToken(TOKEN_PLUS); break;
         case '-': addToken(TOKEN_MINUS); break;
         case '*': addToken(TOKEN_STAR); break;
+        case '%': addToken(TOKEN_MOD); break;
         // Adding inline comments
         case '/': 
             if (match('/')) {
@@ -106,6 +107,10 @@ void Lexer::identifier() {
     if (text == "else") type = KW_ELSE;
     if (text == "and")  type = KW_AND;
     if (text == "or")   type = KW_OR;
+    
+    if (text == "drimming")  type = KW_DRIMMING;
+    if (text == "stopdrim")  type = KW_STOPDRIM;
+    if (text == "drimagain") type = KW_DRIMAGAIN;
     
     if (text == "true") type = TOKEN_TRUE;
     if (text == "false") type = TOKEN_FALSE;
