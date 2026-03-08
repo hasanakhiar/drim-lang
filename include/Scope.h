@@ -56,6 +56,11 @@ public:
         exit(1);
     }
 
+    //Define a variable strictly in the current scope (for the params)
+    void define (const std::string& name, Value value) {
+        values[name] = value;
+    }
+
     void defineFunc(const std::string& name, std::shared_ptr<FunctionStmt> func) {
         functions[name] = func;
     }

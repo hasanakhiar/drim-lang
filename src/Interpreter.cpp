@@ -95,7 +95,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
             // bind passed args to the func's local scope
             for (size_t i = 0; i < argsValues.size(); i++) {
-                functionScope->assign(func->params[i], argsValues[i]);
+                functionScope->define(func->params[i].lexeme, argsValues[i]);
             }
 
             // switch to the function's scope to run the body
