@@ -136,7 +136,7 @@ std::shared_ptr<Expr> Parser::additive() {
 std::shared_ptr<Expr> Parser::term() {
     std::shared_ptr<Expr> expr = power();
 
-    while (check(TOKEN_STAR) || check(TOKEN_SLASH)) {
+    while (check(TOKEN_STAR) || check(TOKEN_SLASH) || check(TOKEN_MOD)) {
         Token op = advance();
         std::shared_ptr<Expr> right = power();
         expr = std::make_shared<BinaryExpr>(expr, op, right);
@@ -251,6 +251,20 @@ std::shared_ptr<Stmt> Parser::statement() {
     if (check(KW_IF)) {
         return ifStatement();
     }
+    // 1b. WHILE Statement (drimming)
+    if (check(KW_DRIMMING)) {
+        return whileStatement();
+    }
+    // 1c. BREAK (stopdrim)
+    if (check(KW_STOPDRIM)) {
+        advance();
+        return std::make_shared<BreakStmt>();
+    }
+    // 1d. CONTINUE (drimagain)
+    if (check(KW_DRIMAGAIN)) {
+        advance();
+        return std::make_shared<ContinueStmt>();
+    }
     // 2. BLOCK Statement { ... }
     if (check(TOKEN_LBRACE)) {
         return std::make_shared<BlockStmt>(block());
@@ -281,7 +295,21 @@ std::shared_ptr<Stmt> Parser::statement() {
         Token name = advance();
         advance(); // Eat '='
         std::shared_ptr<Expr> value = expression();
-        return std::make_shared<AssignStmt>(name, value);
+
+        std::vector<std::shared_ptr<Stmt>> stmts;
+        stmts.push_back(std::make_shared<AssignStmt>(name, value));
+
+        // Check for more: , j = 0
+        while (check(TOKEN_COMMA)) {
+            advance(); // Eat ','
+            Token nextName = consume(TOKEN_IDENTIFIER, "Expect variable name after ','");
+            consume(TOKEN_ASSIGN, "Expect '=' after variable name");
+            std::shared_ptr<Expr> nextValue = expression();
+            stmts.push_back(std::make_shared<AssignStmt>(nextName, nextValue));
+        }
+
+        if (stmts.size() == 1) return stmts[0];
+        return std::make_shared<BlockStmt>(stmts);
     }
 
     // Fallback: Skip token to avoid infinite loop on error
@@ -333,4 +361,19 @@ std::vector<std::shared_ptr<Stmt>> Parser::block() {
     }
     consume(TOKEN_RBRACE, "Expect '}' after block.");
     return stmts;
+}
+
+
+std::shared_ptr<Stmt> Parser::whileStatement() {
+    consume(KW_DRIMMING, "Expect 'drimming'.");
+
+    // Parse condition (e.g. "i <= 10 and j <= 30")
+    std::shared_ptr<Expr> condition = expression();
+
+    // Parse body block
+    consume(TOKEN_LBRACE, "Expect '{' after drimming condition.");
+    std::vector<std::shared_ptr<Stmt>> bodyStmts = block();
+    std::shared_ptr<Stmt> body = std::make_shared<BlockStmt>(bodyStmts);
+
+    return std::make_shared<WhileStmt>(condition, body);
 }
