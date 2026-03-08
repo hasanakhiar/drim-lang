@@ -9,7 +9,6 @@
 #include "Value.h"
 #include <memory>  
 #include <vector>
-#include <string>
 
 // Everything that "Does something" is a Stmt (Statement)
 struct Stmt {
@@ -101,6 +100,33 @@ struct IfStmt : Stmt {
     IfStmt(std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> thenB, std::shared_ptr<Stmt> elseB)
         : condition(cond), thenBranch(thenB), elseBranch(elseB) {}
 };
+
+
+// For func myFunc(a, b) {}
+struct FunctionStmt : Stmt {
+    Token name;
+    std::vector<Token> params;
+    std::vector<std::shared_ptr<Stmt>> body; // the whole block/scope of INS (body)
+    FunctionStmt(Token n, std::vector<Token> p, std::vector<std::shared_ptr<Stmt>> b)
+        : name(n), params(p), body(b) {}
+};
+
+// Command: return x + y
+struct ReturnStmt : Stmt {
+    Token keyword; // storing token just for error handling feedback
+    std::shared_ptr<Expr> value;
+
+    ReturnStmt(Token k, std::shared_ptr<Expr> v) : keyword(k), value(v) {}
+};
+
+// a stmt that just evaluates an expr and discards the result
+// for lines like : user_func(param)
+
+struct ExprStmt : Stmt {
+    std::shared_ptr<Expr> expression;
+    ExprStmt(std::shared_ptr<Expr> e) : expression(e) {}
+};
+
 
 
 #endif

@@ -14,6 +14,7 @@ enum TokenType {
     KW_CONVERT, // Conversion Function
     KW_IF, KW_ELSE,   //
     KW_AND, KW_OR,    // (Logic)
+    KW_FUNC, KW_RETURN, // For Runtime User Defined Functions
 
     // Comparison Operators
     TOKEN_LESS,          // <
@@ -58,7 +59,7 @@ enum TokenType {
 
 struct Token {
     TokenType type;
-    std::string lexeme;
+    std::string lexeme; // the actual value of Token "("
     int line;
 };
 

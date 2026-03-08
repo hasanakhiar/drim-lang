@@ -104,6 +104,10 @@ void Lexer::identifier() {
 
     if (text == "if")   type = KW_IF;
     if (text == "else") type = KW_ELSE;
+
+    if (text == "func") type = KW_FUNC;
+    if (text == "return") type = KW_RETURN;
+
     if (text == "and")  type = KW_AND;
     if (text == "or")   type = KW_OR;
     

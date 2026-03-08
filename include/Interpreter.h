@@ -11,6 +11,13 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <map>
+
+// calling this when we hitting return
+struct ReturnValue {
+    Value value;
+    ReturnValue(Value v) : value(v) {}
+};
 
 class Interpreter {
     std::shared_ptr<Scope> scope;
