@@ -49,9 +49,8 @@ private:
     std::shared_ptr<Stmt> statement();     // Decides if it's IF, PRINT, or ASSIGN
     std::shared_ptr<Stmt> ifStatement();   // Parses if-else
     std::vector<std::shared_ptr<Stmt>> block(); // Parses { ... }
-    std::shared_ptr<Stmt> functionDeclaration(); // Parses func name(params){body}
-    std::shared_ptr<Stmt> returnStatement(); // Parses return expression
-
+    std::shared_ptr<Stmt> whileStatement();   // Parses drimming loops
+    
     // Check current token
     Token peek();
     Token peekNext(); 
