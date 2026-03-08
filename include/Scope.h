@@ -8,6 +8,7 @@
 #include <memory>
 #include <iostream>
 
+struct FunctionStmt;
 
 //Manages variable storage and lookups for nested scopes.
 
