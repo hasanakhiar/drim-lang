@@ -246,10 +246,24 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
 }
 
 // Decides what kind of statement we are looking at
+
 std::shared_ptr<Stmt> Parser::statement() {
+
+    //0. FUNCTION Declaration & Return Stmt
+    if (check(KW_FUNC)) {
+        return functionDeclaration();
+    }
+
+    if (check(KW_RETURN)) {
+        return returnStatement();
+    }
+
     // 1. IF Statement
+
     if (check(KW_IF)) {
+
         return ifStatement();
+
     }
     // 1b. WHILE Statement (drimming)
     if (check(KW_DRIMMING)) {
@@ -266,8 +280,13 @@ std::shared_ptr<Stmt> Parser::statement() {
         return std::make_shared<ContinueStmt>();
     }
     // 2. BLOCK Statement { ... }
+
     if (check(TOKEN_LBRACE)) {
+
+        advance(); // Consume '{'
+
         return std::make_shared<BlockStmt>(block());
+
     }
     // 3. INPUT (drim)
     if (check(KW_DRIM)) {
@@ -312,9 +331,10 @@ std::shared_ptr<Stmt> Parser::statement() {
         return std::make_shared<BlockStmt>(stmts);
     }
 
-    // Fallback: Skip token to avoid infinite loop on error
-    advance();
-    return nullptr; 
+    // REPLACED SKIP FALLBACK
+    std::shared_ptr<Expr> expr = expression();
+    return std::make_shared<ExprStmt>(expr);
+
 }
 
 std::shared_ptr<Stmt> Parser::ifStatement() {

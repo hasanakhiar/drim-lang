@@ -63,7 +63,7 @@ enum TokenType {
 
 struct Token {
     TokenType type;
-    std::string lexeme;
+    std::string lexeme; // the actual value of Token "("
     int line;
 };
 
