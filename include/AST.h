@@ -102,5 +102,18 @@ struct IfStmt : Stmt {
         : condition(cond), thenBranch(thenB), elseBranch(elseB) {}
 };
 
+// Represents: drimming condition { ... }
+struct WhileStmt : Stmt {
+    std::shared_ptr<Expr> condition;
+    std::shared_ptr<Stmt> body;
+    WhileStmt(std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> b)
+        : condition(cond), body(b) {}
+};
+
+// Represents: stopdrim (break)
+struct BreakStmt : Stmt {};
+
+// Represents: drimagain (continue)
+struct ContinueStmt : Stmt {};
 
 #endif
