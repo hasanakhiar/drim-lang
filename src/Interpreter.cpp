@@ -6,6 +6,7 @@
 #include <string>
 #include <cmath>
 #include <variant>
+#include <cctype>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -16,11 +17,41 @@ bool isTruthy(const Value& v) {
     if (std::holds_alternative<int>(v)) return std::get<int>(v) != 0; // So lines like if (5) {...} is still possible
     if (std::holds_alternative<double>(v)) return std::get<double>(v) != 0.0;
     if (std::holds_alternative<std::string>(v)) return !std::get<std::string>(v).empty();
+    if (std::holds_alternative<std::shared_ptr<ArrayValue>>(v)) {
+        return !std::get<std::shared_ptr<ArrayValue>>(v)->elements.empty();
+    }
     return false; // Should not happen for these types
+}
+
+static ArrayType typeFromValue(const Value& v) {
+    if (std::holds_alternative<int>(v)) return ArrayType::INT;
+    if (std::holds_alternative<double>(v)) return ArrayType::DOUBLE;
+    if (std::holds_alternative<std::string>(v)) return ArrayType::STRING;
+    if (std::holds_alternative<bool>(v)) return ArrayType::BOOL;
+    return ArrayType::UNKNOWN;
+}
+
+static std::string arrayTypeName(ArrayType t) {
+    if (t == ArrayType::INT) return "int";
+    if (t == ArrayType::DOUBLE) return "float";
+    if (t == ArrayType::STRING) return "string";
+    if (t == ArrayType::BOOL) return "bool";
+    return "unknown";
+}
+
+static Value defaultValueFor(ArrayType t) {
+    if (t == ArrayType::INT) return 0;
+    if (t == ArrayType::DOUBLE) return 0.0;
+    if (t == ArrayType::STRING) return std::string("");
+    if (t == ArrayType::BOOL) return false;
+    return 0;
 }
 // Parse string inputs into int or double if possible
 Value parseInput(std::string text) {
     if (text.empty()) return text;
+
+    if (text == "true") return true;
+    if (text == "false") return false;
 
     bool isNumber = true;
     bool hasDot = false;
@@ -58,6 +89,59 @@ double getDouble(const Value& v) {
 Interpreter::Interpreter(){}
 
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
+
+    if (auto arrLit = std::dynamic_pointer_cast<ArrayLiteralExpr>(expr)) {
+        auto arr = std::make_shared<ArrayValue>();
+        if (arrLit->elements.empty()) return arr;
+
+        Value first = evaluate(arrLit->elements[0]);
+        if (std::holds_alternative<std::shared_ptr<ArrayValue>>(first)) {
+            std::cerr << "Runtime Error: Nested arrays are not supported yet.\n";
+            exit(1);
+        }
+
+        arr->elementType = typeFromValue(first);
+        arr->elements.push_back(first);
+
+        for (size_t i = 1; i < arrLit->elements.size(); i++) {
+            Value next = evaluate(arrLit->elements[i]);
+            if (std::holds_alternative<std::shared_ptr<ArrayValue>>(next) || typeFromValue(next) != arr->elementType) {
+                std::cerr << "Runtime Error: Array elements must have the same type.\n";
+                exit(1);
+            }
+            arr->elements.push_back(next);
+        }
+
+        return arr;
+    }
+
+    if (auto idxExpr = std::dynamic_pointer_cast<IndexExpr>(expr)) {
+        if (!memory.count(idxExpr->name.lexeme)) {
+            std::cerr << "Runtime Error: Undefined variable '" << idxExpr->name.lexeme << "'\n";
+            exit(1);
+        }
+
+        Value arrVal = memory[idxExpr->name.lexeme];
+        if (!std::holds_alternative<std::shared_ptr<ArrayValue>>(arrVal)) {
+            std::cerr << "Runtime Error: '" << idxExpr->name.lexeme << "' is not an array.\n";
+            exit(1);
+        }
+
+        Value idxVal = evaluate(idxExpr->index);
+        if (!std::holds_alternative<int>(idxVal)) {
+            std::cerr << "Runtime Error: Array index must be int.\n";
+            exit(1);
+        }
+
+        int idx = std::get<int>(idxVal);
+        auto arr = std::get<std::shared_ptr<ArrayValue>>(arrVal);
+        if (idx < 0 || idx >= (int)arr->elements.size()) {
+            std::cerr << "Runtime Error: Array index out of bounds.\n";
+            exit(1);
+        }
+
+        return arr->elements[idx];
+    }
     
     // FUNCTION CALLS (Physics)
     if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
@@ -296,6 +380,13 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
     for (auto cmd : commands) {
         if (!cmd) continue;
 
+        if (auto decl = std::dynamic_pointer_cast<ArrayDeclStmt>(cmd)) {
+            auto arr = std::make_shared<ArrayValue>();
+            memory[decl->name.lexeme] = arr;
+            continue;
+        }
+
+
         // WHILE STATEMENT (drimming)
         if (auto whileStmt = std::dynamic_pointer_cast<WhileStmt>(cmd)) {
             try {
@@ -346,10 +437,59 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
         // Input
         else if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
-            //std::cout << "drim input " << input->name.lexeme << ": ";
-            if (std::getline(std::cin, userText)) {
-                memory[input->name.lexeme] = parseInput(userText);
+            if (!std::getline(std::cin, userText)) {
+                continue;
             }
+
+            Value parsedInput = parseInput(userText);
+
+            if (input->index == nullptr) {
+                memory[input->name.lexeme] = parsedInput;
+                continue;
+            }
+
+            Value idxVal = evaluate(input->index);
+            if (!std::holds_alternative<int>(idxVal)) {
+                std::cerr << "Runtime Error: Array index must be int.\n";
+                exit(1);
+            }
+
+            int idx = std::get<int>(idxVal);
+            if (idx < 0) {
+                std::cerr << "Runtime Error: Array index cannot be negative.\n";
+                exit(1);
+            }
+
+            if (!memory.count(input->name.lexeme)) {
+                memory[input->name.lexeme] = std::make_shared<ArrayValue>();
+            }
+
+            Value& target = memory[input->name.lexeme];
+            if (!std::holds_alternative<std::shared_ptr<ArrayValue>>(target)) {
+                std::cerr << "Runtime Error: '" << input->name.lexeme << "' is not an array.\n";
+                exit(1);
+            }
+
+            auto arr = std::get<std::shared_ptr<ArrayValue>>(target);
+            ArrayType incomingType = typeFromValue(parsedInput);
+            if (incomingType == ArrayType::UNKNOWN) {
+                std::cerr << "Runtime Error: Unsupported array input type.\n";
+                exit(1);
+            }
+
+            if (arr->elementType == ArrayType::UNKNOWN) {
+                arr->elementType = incomingType;
+            } else if (arr->elementType != incomingType) {
+                std::cerr << "Runtime Error: array value type is '" << arrayTypeName(incomingType)
+                          << "', must match '" << arrayTypeName(arr->elementType) << "'.\n";
+                exit(1);
+            }
+
+            if (idx >= (int)arr->elements.size()) {
+                arr->elements.resize(idx + 1, defaultValueFor(arr->elementType));
+            }
+
+            arr->elements[idx] = parsedInput;
         }
         // Assignment
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
@@ -370,6 +510,10 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
             else if (std::holds_alternative<double>(valToCheck)) std::cout << "<type 'float'>\n";
             else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";   
             else if (std::holds_alternative<bool>(valToCheck)) std::cout << "<type 'bool'>\n";
+            else if (std::holds_alternative<std::shared_ptr<ArrayValue>>(valToCheck)) {
+                auto arr = std::get<std::shared_ptr<ArrayValue>>(valToCheck);
+                std::cout << "<type 'array<" << arrayTypeName(arr->elementType) << ">'>\n";
+            }
         }
     }
 }
