@@ -171,12 +171,12 @@ std::shared_ptr<Expr> Parser::unary() {
 // === PRIMARY PARSING (Highest Priority: literals, vars, parens) ===
 std::shared_ptr<Expr> Parser::primary() {
     if (check(TOKEN_INT)) {
-        int val = std::stoi(advance().lexeme);
+        long long val = std::stoll(advance().lexeme);
         return std::make_shared<LiteralExpr>(val);
     }
 
     if (check(TOKEN_DOUBLE)) {
-        double val = std::stod(advance().lexeme);
+        long double val = std::stold(advance().lexeme);
         return std::make_shared<LiteralExpr>(val);
     }
 

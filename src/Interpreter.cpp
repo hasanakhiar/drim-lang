@@ -12,12 +12,12 @@
 
 bool isTruthy(const Value& v) {
     if (std::holds_alternative<bool>(v)) return std::get<bool>(v);
-    if (std::holds_alternative<int>(v)) return std::get<int>(v) != 0; // So lines like if (5) {...} is still possible
-    if (std::holds_alternative<double>(v)) return std::get<double>(v) != 0.0;
+    if (std::holds_alternative<long long>(v)) return std::get<long long>(v) != 0; 
+    if (std::holds_alternative<long double>(v)) return std::get<long double>(v) != 0.0;
     if (std::holds_alternative<std::string>(v)) return !std::get<std::string>(v).empty();
-    return false; // Should not happen for these types
+    return false;
 }
-// Parse string inputs into int or double if possible
+
 Value parseInput(std::string text) {
     if (text.empty()) return text;
 
@@ -25,7 +25,7 @@ Value parseInput(std::string text) {
     bool hasDot = false;
 
     for (char c : text) {
-        if (!isdigit(c)) {
+        if (!isdigit(c) && c != '-') {
             if (c == '.' && !hasDot) {
                 hasDot = true;
             } else {
@@ -37,20 +37,18 @@ Value parseInput(std::string text) {
 
     if (isNumber) {
         try {
-            if (hasDot) return std::stod(text);
-            return std::stoi(text);
+            if (hasDot) return std::stold(text);
+            return std::stoll(text);
         } catch (...) {
-            // fallback to string if conversion fails
             return text;
         }
     }
     return text;
 }
 
-// Helper to extract double from Value
-double getDouble(const Value& v) {
-    if (std::holds_alternative<int>(v)) return (double)std::get<int>(v);
-    if (std::holds_alternative<double>(v)) return std::get<double>(v);
+long double getLongDouble(const Value& v) {
+    if (std::holds_alternative<long long>(v)) return (long double)std::get<long long>(v);
+    if (std::holds_alternative<long double>(v)) return std::get<long double>(v);
     return 0.0;
 }
 
@@ -98,8 +96,8 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
     if (auto una = std::dynamic_pointer_cast<UnaryExpr>(expr)) {
         Value rightVal = evaluate(una->right);
 
-        if (std::holds_alternative<int>(rightVal)) {
-            int r = std::get<int>(rightVal);
+        if (std::holds_alternative<long long>(rightVal)) {
+            long long r = std::get<long long>(rightVal);
             if (una->op.type == TOKEN_BIT_NOT) return ~r;
         }
         std::cerr << "Runtime Error: Invalid unary operation\n";
@@ -117,11 +115,11 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         }
 
         std::string mode = std::get<std::string>(modeVal);
-        double num = 0.0;
+        long double num = 0.0;
 
-        // Get the number as double
-        if (std::holds_alternative<int>(val)) num = (double)std::get<int>(val);
-        else if (std::holds_alternative<double>(val)) num = std::get<double>(val);
+        // Get the number as long double
+        if (std::holds_alternative<long long>(val)) num = (long double)std::get<long long>(val);
+        else if (std::holds_alternative<long double>(val)) num = std::get<long double>(val);
         else {
              std::cerr << "Runtime Error: Cannot convert non-number\n";
              exit(1);
@@ -197,13 +195,13 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         }
 
         // Numeric operations
-        bool leftIsNum = std::holds_alternative<int>(leftVal) || std::holds_alternative<double>(leftVal); 
-        bool rightIsNum = std::holds_alternative<int>(rightVal) || std::holds_alternative<double>(rightVal);
+        bool leftIsNum = std::holds_alternative<long long>(leftVal) || std::holds_alternative<long double>(leftVal); 
+        bool rightIsNum = std::holds_alternative<long long>(rightVal) || std::holds_alternative<long double>(rightVal);
         
-        // Convert to doubles for easy comparison
-        double l = 0.0, r = 0.0;
-        if (leftIsNum) l = std::holds_alternative<int>(leftVal) ? std::get<int>(leftVal) : std::get<double>(leftVal);
-        if (rightIsNum) r = std::holds_alternative<int>(rightVal) ? std::get<int>(rightVal) : std::get<double>(rightVal);
+        // Convert to long doubles for easy comparison
+        long double l = 0.0, r = 0.0;
+        if (leftIsNum) l = std::holds_alternative<long long>(leftVal) ? (long double)std::get<long long>(leftVal) : std::get<long double>(leftVal);
+        if (rightIsNum) r = std::holds_alternative<long long>(rightVal) ? (long double)std::get<long long>(rightVal) : std::get<long double>(rightVal);
 
         // --- B. COMPARISONS (<, >, ==, !=) ---
         if (leftIsNum && rightIsNum) {
@@ -227,36 +225,36 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
         // MATH OPERATIONS (+, -, *, /) ---
         if (leftIsNum && rightIsNum) {
-            bool useDouble = std::holds_alternative<double>(leftVal) || std::holds_alternative<double>(rightVal);
+            bool useDouble = std::holds_alternative<long double>(leftVal) || std::holds_alternative<long double>(rightVal);
 
-            double l = std::holds_alternative<int>(leftVal) ? std::get<int>(leftVal) : std::get<double>(leftVal);
-            double r = std::holds_alternative<int>(rightVal) ? std::get<int>(rightVal) : std::get<double>(rightVal);
+            long double l = std::holds_alternative<long long>(leftVal) ? (long double)std::get<long long>(leftVal) : std::get<long double>(leftVal);
+            long double r = std::holds_alternative<long long>(rightVal) ? (long double)std::get<long long>(rightVal) : std::get<long double>(rightVal);
 
             if (bin->op.type == TOKEN_PLUS) {
                 if(useDouble) return l + r;
-                return (int)l + (int)r;
+                return (long long)l + (long long)r;
             }
             if (bin->op.type == TOKEN_MINUS) {
                 if(useDouble) return l - r;
-                return (int)l - (int)r;
+                return (long long)l - (long long)r;
             }
             if (bin->op.type == TOKEN_STAR) {
                 if(useDouble) return l * r;
-                return (int)l * (int)r;
+                return (long long)l * (long long)r;
             }
             if (bin->op.type == TOKEN_SLASH) {
                 if (r == 0) { std::cerr << "Runtime Error: Division by zero\n"; exit(1); }
                 if(useDouble) return l / r;
-                return (int)(l / r);
+                return (long long)(l / r);
             }
             if (bin->op.type == TOKEN_POW) {
-                return pow(l, r);
+                return powl(l, r);
             }
 
             // Bitwise operations (integers only)
             if (!useDouble) {
-                int li = (int)l;
-                int ri = (int)r;
+                long long li = (long long)l;
+                long long ri = (long long)r;
                 if (bin->op.type == TOKEN_BIT_AND) return li & ri;
                 if (bin->op.type == TOKEN_BIT_OR) return li | ri;
                 if (bin->op.type == TOKEN_LSHIFT) return li << ri;
@@ -267,8 +265,8 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         // String concatenation
         if (bin->op.type == TOKEN_PLUS) {
             auto toStr = [](const Value& v) -> std::string {
-                if (std::holds_alternative<int>(v)) return std::to_string(std::get<int>(v));
-                if (std::holds_alternative<double>(v)) return std::to_string(std::get<double>(v));
+                if (std::holds_alternative<long long>(v)) return std::to_string(std::get<long long>(v));
+                if (std::holds_alternative<long double>(v)) return std::to_string(std::get<long double>(v));
                 if (std::holds_alternative<bool>(v)) return std::get<bool>(v) ? "true" : "false";        
                 return std::get<std::string>(v);
             };
@@ -326,8 +324,8 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
         else if (auto typeStmt = std::dynamic_pointer_cast<TypeStmt>(cmd)) {
             Value valToCheck = evaluate(typeStmt->expression);
 
-            if (std::holds_alternative<int>(valToCheck)) std::cout << "<type 'int'>\n";
-            else if (std::holds_alternative<double>(valToCheck)) std::cout << "<type 'float'>\n";
+            if (std::holds_alternative<long long>(valToCheck)) std::cout << "<type 'int'>\n";
+            else if (std::holds_alternative<long double>(valToCheck)) std::cout << "<type 'float'>\n";
             else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";   
             else if (std::holds_alternative<bool>(valToCheck)) std::cout << "<type 'bool'>\n";
         }

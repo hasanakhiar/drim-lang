@@ -23,7 +23,7 @@ struct Expr {
 
 // 2. The Data (Expressions) Represents raw text like "hello" or "123"
 struct LiteralExpr : Expr {
-    Value value; // Can now hold int, double, or string
+    Value value; // Can now hold long long, long double, or string
     LiteralExpr(Value v) : value(v) {}
 };
 
