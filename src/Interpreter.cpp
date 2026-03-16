@@ -1,6 +1,7 @@
 #include "../include/Interpreter.h"
 #include "../include/Utils.h"
 #include "../include/Physics.h"
+#include "../include/DS.h"
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -11,10 +12,10 @@
 #endif
 
 bool isTruthy(const Value& v) {
-    if (std::holds_alternative<bool>(v)) return std::get<bool>(v);
-    if (std::holds_alternative<long long>(v)) return std::get<long long>(v) != 0; 
-    if (std::holds_alternative<long double>(v)) return std::get<long double>(v) != 0.0;
-    if (std::holds_alternative<std::string>(v)) return !std::get<std::string>(v).empty();
+    if (auto b = std::get_if<bool>(&v.data)) return *b;
+    if (auto i = std::get_if<long long>(&v.data)) return *i != 0; 
+    if (auto d = std::get_if<long double>(&v.data)) return *d != 0.0;
+    if (auto s = std::get_if<std::string>(&v.data)) return !s->empty();
     return false;
 }
 
@@ -47,8 +48,8 @@ Value parseInput(std::string text) {
 }
 
 long double getLongDouble(const Value& v) {
-    if (std::holds_alternative<long long>(v)) return (long double)std::get<long long>(v);
-    if (std::holds_alternative<long double>(v)) return std::get<long double>(v);
+    if (auto i = std::get_if<long long>(&v.data)) return (long double)*i;
+    if (auto d = std::get_if<long double>(&v.data)) return *d;
     return 0.0;
 }
 
@@ -56,7 +57,7 @@ Interpreter::Interpreter(){}
 
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
     
-    // FUNCTION CALLS (Physics)
+    // FUNCTION CALLS (Physics & DS)
     if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
         std::string funcName;
         if (auto var = std::dynamic_pointer_cast<VariableExpr>(call->callee)) {
@@ -75,6 +76,12 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             }
             args[count++] = evaluate(arg);
         }
+        
+        // Check if it's a Stack/DS function
+        if (funcName.find("stack_") == 0) {
+            return execDS(funcName, args, count);
+        }
+
         return execPhysics(funcName, args, count);
     }
 
@@ -96,9 +103,8 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
     if (auto una = std::dynamic_pointer_cast<UnaryExpr>(expr)) {
         Value rightVal = evaluate(una->right);
 
-        if (std::holds_alternative<long long>(rightVal)) {
-            long long r = std::get<long long>(rightVal);
-            if (una->op.type == TOKEN_BIT_NOT) return ~r;
+        if (auto r = std::get_if<long long>(&rightVal.data)) {
+            if (una->op.type == TOKEN_BIT_NOT) return ~(*r);
         }
         std::cerr << "Runtime Error: Invalid unary operation\n";
         exit(1);
@@ -109,73 +115,50 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         Value val = evaluate(conv->value);
         Value modeVal = evaluate(conv->mode);
 
-        if (!std::holds_alternative<std::string>(modeVal)) {
+        auto modePtr = std::get_if<std::string>(&modeVal.data);
+        if (!modePtr) {
             std::cerr << "Runtime Error: Conversion mode must be a string\n";
             exit(1);
         }
 
-        std::string mode = std::get<std::string>(modeVal);
+        std::string mode = *modePtr;
         long double num = 0.0;
 
         // Get the number as long double
-        if (std::holds_alternative<long long>(val)) num = (long double)std::get<long long>(val);
-        else if (std::holds_alternative<long double>(val)) num = std::get<long double>(val);
+        if (auto i = std::get_if<long long>(&val.data)) num = (long double)*i;
+        else if (auto d = std::get_if<long double>(&val.data)) num = *d;
         else {
              std::cerr << "Runtime Error: Cannot convert non-number\n";
              exit(1);
         }
 
         // --- CONVERSION LOGIC ---
-        // Length
-        if (mode == "in_cm") return num * 2.54;
-        if (mode == "cm_in") return num / 2.54;
-
-        // Power
-        if (mode == "hp_kw") return num * 0.7457;
-        if (mode == "kw_hp") return num / 0.7457;
-
-        // Temperature
-        if (mode == "f_c") return (num - 32.0) * 5.0 / 9.0;
-        if (mode == "c_f") return (num * 9.0 / 5.0) + 32.0;
-
-        // Pressure
-        if (mode == "psi_bar") return num * 0.0689476;
-        if (mode == "bar_psi") return num / 0.0689476;
-
-        // Digital Storage
-        if (mode == "mb_gb") return num / 1024.0;
-        if (mode == "gb_mb") return num * 1024.0;
-
-        // Energy
-        if (mode == "j_cal") return num / 4184.0;
-        if (mode == "cal_j") return num * 4184.0;
-
-        // Angles
-        if (mode == "deg_rad") return num * (M_PI / 180.0);
-        if (mode == "rad_deg") return num * (180.0 / M_PI);
-
-        // Mass
-        if (mode == "lb_kg") return num * 0.453592;
-        if (mode == "kg_lb") return num / 0.453592;
-
-        // Currency
-        if (mode == "usd_bdt") return num * 122;
-        if (mode == "bdt_usd") return num / 122;
-
-        if (mode == "usd_eur") return num * 0.92;
-        if (mode == "eur_usd") return num / 0.92;
-
-        // Speed
-        if (mode == "mph_kmph") return num * 1.60934;
-        if (mode == "kmph_mph") return num / 1.60934;
-
-        // Torque
-        if (mode == "nm_ftlb") return num * 0.737562;
-        if (mode == "ftlb_nm") return num / 0.737562;
-
-        // G-Force
-        if (mode == "g_ms2") return num * 9.80665;
-        if (mode == "ms2_g") return num / 9.80665;
+        if (mode == "in_cm") return num * 2.54L;
+        if (mode == "cm_in") return num / 2.54L;
+        if (mode == "hp_kw") return num * 0.7457L;
+        if (mode == "kw_hp") return num / 0.7457L;
+        if (mode == "f_c") return (num - 32.0L) * 5.0L / 9.0L;
+        if (mode == "c_f") return (num * 9.0L / 5.0L) + 32.0L;
+        if (mode == "psi_bar") return num * 0.0689476L;
+        if (mode == "bar_psi") return num / 0.0689476L;
+        if (mode == "mb_gb") return num / 1024.0L;
+        if (mode == "gb_mb") return num * 1024.0L;
+        if (mode == "j_cal") return num / 4184.0L;
+        if (mode == "cal_j") return num * 4184.0L;
+        if (mode == "deg_rad") return num * (M_PI / 180.0L);
+        if (mode == "rad_deg") return num * (180.0L / M_PI);
+        if (mode == "lb_kg") return num * 0.453592L;
+        if (mode == "kg_lb") return num / 0.453592L;
+        if (mode == "usd_bdt") return num * 122.0L;
+        if (mode == "bdt_usd") return num / 122.0L;
+        if (mode == "usd_eur") return num * 0.92L;
+        if (mode == "eur_usd") return num / 0.92L;
+        if (mode == "mph_kmph") return num * 1.60934L;
+        if (mode == "kmph_mph") return num / 1.60934L;
+        if (mode == "nm_ftlb") return num * 0.737562L;
+        if (mode == "ftlb_nm") return num / 0.737562L;
+        if (mode == "g_ms2") return num * 9.80665L;
+        if (mode == "ms2_g") return num / 9.80665L;
 
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
@@ -186,24 +169,16 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         Value leftVal = evaluate(bin->left);
         Value rightVal = evaluate(bin->right);
 
-        // --- A. LOGIC OPERATORS (and, or) ---
-        if (bin->op.type == KW_AND) {
-            return (isTruthy(leftVal) && isTruthy(rightVal));
-        }
-        if (bin->op.type == KW_OR) {
-            return (isTruthy(leftVal) || isTruthy(rightVal));
-        }
+        if (bin->op.type == KW_AND) return (isTruthy(leftVal) && isTruthy(rightVal));
+        if (bin->op.type == KW_OR) return (isTruthy(leftVal) || isTruthy(rightVal));
 
-        // Numeric operations
-        bool leftIsNum = std::holds_alternative<long long>(leftVal) || std::holds_alternative<long double>(leftVal); 
-        bool rightIsNum = std::holds_alternative<long long>(rightVal) || std::holds_alternative<long double>(rightVal);
+        bool leftIsNum = std::holds_alternative<long long>(leftVal.data) || std::holds_alternative<long double>(leftVal.data); 
+        bool rightIsNum = std::holds_alternative<long long>(rightVal.data) || std::holds_alternative<long double>(rightVal.data);
         
-        // Convert to long doubles for easy comparison
         long double l = 0.0, r = 0.0;
-        if (leftIsNum) l = std::holds_alternative<long long>(leftVal) ? (long double)std::get<long long>(leftVal) : std::get<long double>(leftVal);
-        if (rightIsNum) r = std::holds_alternative<long long>(rightVal) ? (long double)std::get<long long>(rightVal) : std::get<long double>(rightVal);
+        if (leftIsNum) l = getLongDouble(leftVal);
+        if (rightIsNum) r = getLongDouble(rightVal);
 
-        // --- B. COMPARISONS (<, >, ==, !=) ---
         if (leftIsNum && rightIsNum) {
             switch (bin->op.type) {
                 case TOKEN_LESS:          return (l < r);
@@ -215,21 +190,11 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             }
         }
 
-        // General equality (e.g. bool vs bool, string vs string, or type mismatch)
-        if (bin->op.type == TOKEN_EQUAL_EQUAL) {
-            return leftVal == rightVal;
-        }
-        if (bin->op.type == TOKEN_BANG_EQUAL) {
-            return leftVal != rightVal;
-        }
+        if (bin->op.type == TOKEN_EQUAL_EQUAL) return leftVal == rightVal;
+        if (bin->op.type == TOKEN_BANG_EQUAL) return leftVal != rightVal;
 
-        // MATH OPERATIONS (+, -, *, /) ---
         if (leftIsNum && rightIsNum) {
-            bool useDouble = std::holds_alternative<long double>(leftVal) || std::holds_alternative<long double>(rightVal);
-
-            long double l = std::holds_alternative<long long>(leftVal) ? (long double)std::get<long long>(leftVal) : std::get<long double>(leftVal);
-            long double r = std::holds_alternative<long long>(rightVal) ? (long double)std::get<long long>(rightVal) : std::get<long double>(rightVal);
-
+            bool useDouble = std::holds_alternative<long double>(leftVal.data) || std::holds_alternative<long double>(rightVal.data);
             if (bin->op.type == TOKEN_PLUS) {
                 if(useDouble) return l + r;
                 return (long long)l + (long long)r;
@@ -247,11 +212,8 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
                 if(useDouble) return l / r;
                 return (long long)(l / r);
             }
-            if (bin->op.type == TOKEN_POW) {
-                return powl(l, r);
-            }
+            if (bin->op.type == TOKEN_POW) return powl(l, r);
 
-            // Bitwise operations (integers only)
             if (!useDouble) {
                 long long li = (long long)l;
                 long long ri = (long long)r;
@@ -262,13 +224,13 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             }
         }
 
-        // String concatenation
         if (bin->op.type == TOKEN_PLUS) {
             auto toStr = [](const Value& v) -> std::string {
-                if (std::holds_alternative<long long>(v)) return std::to_string(std::get<long long>(v));
-                if (std::holds_alternative<long double>(v)) return std::to_string(std::get<long double>(v));
-                if (std::holds_alternative<bool>(v)) return std::get<bool>(v) ? "true" : "false";        
-                return std::get<std::string>(v);
+                if (auto i = std::get_if<long long>(&v.data)) return std::to_string(*i);
+                if (auto d = std::get_if<long double>(&v.data)) return std::to_string(*d);
+                if (auto b = std::get_if<bool>(&v.data)) return *b ? "true" : "false";        
+                if (auto s = std::get_if<std::string>(&v.data)) return *s;
+                return "<stack>";
             };
             return toStr(leftVal) + toStr(rightVal);
         }
@@ -277,57 +239,44 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
         exit(1);
     }
 
-    return 0; 
+    return 0LL; 
 }
 
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
     for (auto cmd : commands) {
         if (!cmd) continue;
-
-        // IF STATEMENT
         if (auto ifStmt = std::dynamic_pointer_cast<IfStmt>(cmd)) {
             Value cond = evaluate(ifStmt->condition);
             if (isTruthy(cond)) {
-                // Execute 'Then' (It's usually a BlockStmt)
-                std::vector<std::shared_ptr<Stmt>> wrapper = { ifStmt->thenBranch };
-                interpret(wrapper); // Recursive call
+                interpret({ ifStmt->thenBranch });
             } else if (ifStmt->elseBranch != nullptr) {
-                // Execute 'Else'
-                std::vector<std::shared_ptr<Stmt>> wrapper = { ifStmt->elseBranch };
-                interpret(wrapper);
+                interpret({ ifStmt->elseBranch });
             }
         }
-        // BLOCK STATEMENT { ... }
         else if (auto block = std::dynamic_pointer_cast<BlockStmt>(cmd)) {
-            interpret(block->statements); // Recursively execute the list inside
+            interpret(block->statements);
         }
-        // Input
         else if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
-            //std::cout << "drim input " << input->name.lexeme << ": ";
-            if (std::getline(std::cin, userText)) {
-                memory[input->name.lexeme] = parseInput(userText);
-            }
+            if (std::getline(std::cin, userText)) memory[input->name.lexeme] = parseInput(userText);
         }
-        // Assignment
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
-            Value val = evaluate(assign->value);
-            memory[assign->name.lexeme] = val;
+            memory[assign->name.lexeme] = evaluate(assign->value);
         }
-        // PRINT (wake)
+        else if (auto exprStmt = std::dynamic_pointer_cast<ExpressionStmt>(cmd)) {
+            evaluate(exprStmt->expression);
+        }
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
-            Value output = evaluate(print->expression);
-            printValue(output);
+            printValue(evaluate(print->expression));
             std::cout << "\n";
         }
-        //TYPE CHECK
         else if (auto typeStmt = std::dynamic_pointer_cast<TypeStmt>(cmd)) {
             Value valToCheck = evaluate(typeStmt->expression);
-
-            if (std::holds_alternative<long long>(valToCheck)) std::cout << "<type 'int'>\n";
-            else if (std::holds_alternative<long double>(valToCheck)) std::cout << "<type 'float'>\n";
-            else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";   
-            else if (std::holds_alternative<bool>(valToCheck)) std::cout << "<type 'bool'>\n";
+            if (std::holds_alternative<long long>(valToCheck.data)) std::cout << "<type 'int'>\n";
+            else if (std::holds_alternative<long double>(valToCheck.data)) std::cout << "<type 'float'>\n";
+            else if (std::holds_alternative<std::string>(valToCheck.data)) std::cout << "<type 'string'>\n";   
+            else if (std::holds_alternative<bool>(valToCheck.data)) std::cout << "<type 'bool'>\n";
+            else std::cout << "<type 'stack'>\n";
         }
     }
 }

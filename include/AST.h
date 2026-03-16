@@ -82,6 +82,12 @@ struct AssignStmt : Stmt {
     std::shared_ptr<Expr> value;
     AssignStmt(Token n, std::shared_ptr<Expr> v) : name(n), value(v) {}
 };
+
+struct ExpressionStmt : Stmt {
+    std::shared_ptr<Expr> expression;
+    ExpressionStmt(std::shared_ptr<Expr> e) : expression(e) {}
+};
+
 struct TypeStmt : Stmt {
     std::shared_ptr<Expr> expression; // (variable or literal currently being checked)
     TypeStmt(std::shared_ptr<Expr> e) : expression(e) {}

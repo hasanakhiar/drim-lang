@@ -7,8 +7,8 @@
 long double getNum(const Value* args, size_t count, size_t index) {
     if (index >= count) return 0.0;
     const Value& v = args[index];
-    if (std::holds_alternative<long long>(v)) return (long double)std::get<long long>(v);
-    if (std::holds_alternative<long double>(v)) return std::get<long double>(v);
+    if (auto i = std::get_if<long long>(&v.data)) return (long double)*i;
+    if (auto d = std::get_if<long double>(&v.data)) return *d;
     return 0.0;
 }
 
