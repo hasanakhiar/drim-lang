@@ -9,7 +9,6 @@
 #include "Value.h"
 #include <memory>  
 #include <vector>
-#include <string>
 
 // Everything that "Does something" is a Stmt (Statement)
 struct Stmt {
@@ -102,18 +101,32 @@ struct IfStmt : Stmt {
         : condition(cond), thenBranch(thenB), elseBranch(elseB) {}
 };
 
-// Represents: drimming condition { ... }
-struct WhileStmt : Stmt {
-    std::shared_ptr<Expr> condition;
-    std::shared_ptr<Stmt> body;
-    WhileStmt(std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> b)
-        : condition(cond), body(b) {}
+
+// For func myFunc(a, b) {}
+struct FunctionStmt : Stmt {
+    Token name;
+    std::vector<Token> params;
+    std::vector<std::shared_ptr<Stmt>> body; // the whole block/scope of INS (body)
+    FunctionStmt(Token n, std::vector<Token> p, std::vector<std::shared_ptr<Stmt>> b)
+        : name(n), params(p), body(b) {}
 };
 
-// Represents: stopdrim (break)
-struct BreakStmt : Stmt {};
+// Command: return x + y
+struct ReturnStmt : Stmt {
+    Token keyword; // storing token just for error handling feedback
+    std::shared_ptr<Expr> value;
 
-// Represents: drimagain (continue)
-struct ContinueStmt : Stmt {};
+    ReturnStmt(Token k, std::shared_ptr<Expr> v) : keyword(k), value(v) {}
+};
+
+// a stmt that just evaluates an expr and discards the result
+// for lines like : user_func(param)
+
+struct ExprStmt : Stmt {
+    std::shared_ptr<Expr> expression;
+    ExprStmt(std::shared_ptr<Expr> e) : expression(e) {}
+};
+
+
 
 #endif

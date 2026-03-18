@@ -1,0 +1,12 @@
+x = 10
+wake("Global x should be 10: " + x)
+
+{
+    x = 20
+    y = 30
+    wake("Inner x should be 20: " + x)
+    wake("Inner y should be 30: " + y)
+}
+
+wake("Global x should now be 20: " + x)
+// wake("This should error: " + y)

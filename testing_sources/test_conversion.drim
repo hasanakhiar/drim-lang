@@ -11,4 +11,4 @@ wake("100 kmph to mph:")
 wake(convert(100, "kmph_mph"))
 
 wake("1 USD to BDT:")
-wake(2 + convert(1, "usd_bdt"))
+wake( convert(1, "usd_bdt"))

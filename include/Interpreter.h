@@ -7,13 +7,20 @@
 
 #include "AST.h"
 #include "Value.h"
+#include "Scope.h"
 #include <vector>
-#include <map>
 #include <string>
 #include <memory>
+#include <map>
+
+// calling this when we hitting return
+struct ReturnValue {
+    Value value;
+    ReturnValue(Value v) : value(v) {}
+};
 
 class Interpreter {
-    std::map<std::string, Value> memory;
+    std::shared_ptr<Scope> scope;
 
 public:
     Interpreter(); 
