@@ -1,5 +1,6 @@
 #include "../include/Interpreter.h"
 #include "../include/Physics.h"
+#include "../include/Signal.h"
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -294,7 +295,16 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             if (bin->op.type == TOKEN_POW) {
                 return pow(l, r);
             }
-
+            if (bin->op.type == TOKEN_MOD) {
+                if (!useDouble) {
+                    int li = (int)l;
+                    int ri = (int)r;
+                    if (ri == 0) { std::cerr << "Runtime Error: Modulo by zero\n"; exit(1); }
+                    return li % ri;
+                }
+                if (r == 0) { std::cerr << "Runtime Error: Modulo by zero\n"; exit(1); }
+                return std::fmod(l, r);
+            }
             // Bitwise operations (integers only)
             if (!useDouble) {
                 int li = (int)l;
@@ -328,6 +338,36 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
     for (auto cmd : commands) { // cmd = every line of code
         if (!cmd) continue;
 
+        // WHILE STATEMENT (drimming)
+        if (auto whileStmt = std::dynamic_pointer_cast<WhileStmt>(cmd)) {
+            try {
+                while (true) {
+                    Value cond = evaluate(whileStmt->condition);
+                    if (!isTruthy(cond)) break;
+                    try {
+                        std::vector<std::shared_ptr<Stmt>> wrapper = { whileStmt->body };
+                        interpret(wrapper);
+                    } catch (ContinueSignal&) {
+                        // Skip rest of body, re-evaluate condition
+                        continue;
+                    }
+                }
+            } catch (BreakSignal&) {
+                // Exit the loop entirely
+            }
+            continue; // Move to next statement after the loop
+        }
+
+        // BREAK (stopdrim)
+        if (auto brk = std::dynamic_pointer_cast<BreakStmt>(cmd)) {
+            throw BreakSignal();
+        }
+
+        // CONTINUE (drimagain)
+        if (auto cont = std::dynamic_pointer_cast<ContinueStmt>(cmd)) {
+            throw ContinueSignal();
+        }
+        
 
         // Save Function Definition
         if (auto funcStmt = std::dynamic_pointer_cast<FunctionStmt>(cmd)) {

@@ -14,6 +14,10 @@ enum TokenType {
     KW_CONVERT, // Conversion Function
     KW_IF, KW_ELSE,   //
     KW_AND, KW_OR,    // (Logic)
+    KW_DRIMMING,       // While loop
+    KW_STOPDRIM,       // Break
+    KW_DRIMAGAIN,      // Continue
+
     KW_FUNC, KW_RETURN, // For Runtime User Defined Functions
 
     // Comparison Operators
@@ -30,6 +34,7 @@ enum TokenType {
     TOKEN_STAR,     // *
     TOKEN_SLASH,    // /
     TOKEN_POW,      // ^
+    TOKEN_MOD,      // %
 
     // Bitwise Operators
     TOKEN_BIT_AND,    // &
