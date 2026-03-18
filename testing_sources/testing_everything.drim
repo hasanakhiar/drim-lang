@@ -16,7 +16,7 @@ type(x)     // Should print <type 'int'>
 type(pi)    // Should print <type 'float'>
 type(str)   // Should print <type 'string'>
 
-// ------- Input ----
+// ---- Input ----
 wake("Enter a number to double it:")
 // This will take input
 drim(userNum)

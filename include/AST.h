@@ -63,10 +63,22 @@ struct ConvertExpr : Expr {
     ConvertExpr(std::shared_ptr<Expr> v, std::shared_ptr<Expr> m) : value(v), mode(m) {}
 };
 
+struct ArrayLiteralExpr : Expr {
+    std::vector<std::shared_ptr<Expr>> elements;
+    ArrayLiteralExpr(std::vector<std::shared_ptr<Expr>> elems) : elements(elems) {}
+};
+
+struct IndexExpr : Expr {
+    Token name;
+    std::shared_ptr<Expr> index;
+    IndexExpr(Token n, std::shared_ptr<Expr> i) : name(n), index(i) {}
+};
+
 // 3. The Commands (Statements) -- Command: drim(x)
 struct InputStmt : Stmt {
     Token name;
-    InputStmt(Token n) : name(n) {}
+    std::shared_ptr<Expr> index;
+    InputStmt(Token n, std::shared_ptr<Expr> idx = nullptr) : name(n), index(idx) {}
 };
 
 // Command: wake("hello")
@@ -148,6 +160,11 @@ struct ExprStmt : Stmt {
     ExprStmt(std::shared_ptr<Expr> e) : expression(e) {}
 };
 
+
+struct ArrayDeclStmt : Stmt {
+    Token name;
+    ArrayDeclStmt(Token n) : name(n) {}
+};
 
 
 #endif

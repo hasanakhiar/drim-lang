@@ -1,0 +1,14 @@
+y[]
+x = [0, 1, 2, 3]
+
+itr = 0
+drimming itr < 3 {
+    drim(y[itr])
+    itr = itr + 1
+}
+
+itr = 0
+drimming itr < 3 {
+    wake(y[itr])
+    itr = itr + 1
+}

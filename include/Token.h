@@ -57,6 +57,8 @@ enum TokenType {
     TOKEN_COMMA,      // ,
     TOKEN_LBRACE,     // {
     TOKEN_RBRACE,     // }
+    TOKEN_LBRACKET,   // [
+    TOKEN_RBRACKET,   // ]
 
     TOKEN_EOF,
     TOKEN_ERROR

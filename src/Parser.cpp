@@ -15,6 +15,11 @@ Token Parser::peekNext() {
     return tokens[current + 1];
 }
 
+Token Parser::peekNextNext() {
+    if (current + 2 >= tokens.size()) return tokens.back();
+    return tokens[current + 2];
+}
+
 Token Parser::advance() {
     if (current < tokens.size()) current++;
     return tokens[current - 1];
@@ -170,6 +175,18 @@ std::shared_ptr<Expr> Parser::unary() {
 
 // === PRIMARY PARSING (Highest Priority: literals, vars, parens) ===
 std::shared_ptr<Expr> Parser::primary() {
+    if (check(TOKEN_LBRACKET)) {
+        advance();
+        std::vector<std::shared_ptr<Expr>> elems;
+        if (!check(TOKEN_RBRACKET)) {
+            do {
+                elems.push_back(expression());
+            } while (check(TOKEN_COMMA) && advance().type == TOKEN_COMMA);
+        }
+        consume(TOKEN_RBRACKET, "Expect ']' after array literal.");
+        return std::make_shared<ArrayLiteralExpr>(elems);
+    }
+
     if (check(TOKEN_INT)) {
         int val = std::stoi(advance().lexeme);
         return std::make_shared<LiteralExpr>(val);
@@ -207,6 +224,13 @@ std::shared_ptr<Expr> Parser::primary() {
             }
             Token paren = consume(TOKEN_RPAREN, "Expect ')' after arguments.");
             return std::make_shared<CallExpr>(std::make_shared<VariableExpr>(name), paren, args);
+        }
+
+        if (check(TOKEN_LBRACKET)) {
+            advance();
+            std::shared_ptr<Expr> idx = expression();
+            consume(TOKEN_RBRACKET, "Expect ']' after index.");
+            return std::make_shared<IndexExpr>(name, idx);
         }
 
         return std::make_shared<VariableExpr>(name);
@@ -289,28 +313,21 @@ std::shared_ptr<Stmt> Parser::statement() {
         return std::make_shared<BlockStmt>(block());
 
     }
-    // 3. INPUT (drim)
-    if (check(KW_DRIM)) {
-        advance(); consume(TOKEN_LPAREN, "Expect '('");
-        Token name = consume(TOKEN_IDENTIFIER, "Expect var name");
-        consume(TOKEN_RPAREN, "Expect ')'");
-        return std::make_shared<InputStmt>(name);
-    }
-    // 4. PRINT (wake)
+    // 3. PRINT (wake)
     if (check(KW_WAKE)) {
         advance(); consume(TOKEN_LPAREN, "Expect '('");
         std::shared_ptr<Expr> val = expression();
         consume(TOKEN_RPAREN, "Expect ')'");
         return std::make_shared<PrintStmt>(val);
     }
-    // 5. TYPE
+    // 4. TYPE
     if (check(KW_TYPE)) {
          advance(); consume(TOKEN_LPAREN, "Expect '('");
          std::shared_ptr<Expr> val = expression();
          consume(TOKEN_RPAREN, "Expect ')'");
          return std::make_shared<TypeStmt>(val);
     }
-    // 6. ASSIGNMENT (var = val)
+    // 5. ASSIGNMENT (var = val)
     if (check(TOKEN_IDENTIFIER) && peekNext().type == TOKEN_ASSIGN) {
         Token name = advance();
         advance(); // Eat '='
@@ -336,6 +353,37 @@ std::shared_ptr<Stmt> Parser::statement() {
     std::shared_ptr<Expr> expr = expression();
     return std::make_shared<ExprStmt>(expr);
 
+    // Array declaration: y[]
+    if (check(TOKEN_IDENTIFIER) &&
+        peekNext().type == TOKEN_LBRACKET &&
+        peekNextNext().type == TOKEN_RBRACKET) {
+        Token name = advance();
+        advance(); // [
+        advance(); // ]
+        return std::make_shared<ArrayDeclStmt>(name);
+    }
+
+
+    // INPUT (drim)
+    if (check(KW_DRIM)) {
+        advance();
+        consume(TOKEN_LPAREN, "Expect '('");
+        Token name = consume(TOKEN_IDENTIFIER, "Expect var name");
+
+        std::shared_ptr<Expr> idx = nullptr;
+        if (check(TOKEN_LBRACKET)) {
+            advance(); // [
+            idx = expression();
+            consume(TOKEN_RBRACKET, "Expect ']' after index");
+        }
+
+        consume(TOKEN_RPAREN, "Expect ')'");
+        return std::make_shared<InputStmt>(name, idx);
+    }
+
+    // Fallback: Skip token to avoid infinite loop on error
+    advance();
+    return nullptr; 
 }
 
 std::shared_ptr<Stmt> Parser::ifStatement() {

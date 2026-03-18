@@ -21,6 +21,8 @@ void Lexer::scanToken() {
         case ')': addToken(TOKEN_RPAREN); break;
         case '{': addToken(TOKEN_LBRACE); break;
         case '}': addToken(TOKEN_RBRACE); break;
+        case '[': addToken(TOKEN_LBRACKET); break;
+        case ']': addToken(TOKEN_RBRACKET); break;
         case ',': addToken(TOKEN_COMMA); break;
 
         // Math
@@ -83,7 +85,7 @@ void Lexer::scanToken() {
         case '\r':
         case '\t': break;
         case '\n': line++; break;
-        case '"': string(); break;
+        case '"': string(); break;               // only double-quoted strings
 
         default:
             if (isDigit(c)) number();
@@ -123,16 +125,17 @@ void Lexer::identifier() {
 }
 
 void Lexer::string() {
-    while(peek() != '"' && !isAtEnd()) {
-      if(peek() == '\n') line++ ;
-      advance();
+    while (peek() != '"' && !isAtEnd()) {
+        if (peek() == '\n') line++;
+        advance();
     }
-    if(isAtEnd()) {
-        std::cerr << "Unterminated string on line " << line << "\n";
-        return ;
-    }
-    advance() ;
 
+    if (isAtEnd()) {
+        std::cerr << "Unterminated string on line " << line << "\n";
+        return;
+    }
+
+    advance(); // closing "
     std::string value = source.substr(start + 1, current - start - 2);
     tokens.push_back({TOKEN_STRING, value, line});
 }
@@ -140,7 +143,7 @@ void Lexer::string() {
 void Lexer::number() {
     while (isDigit(peek())) advance();
 
-    if (peek() == '.' && isDigit(source[current + 1])) {
+    if (peek() == '.' && (current + 1) < source.length() && isDigit(source[current + 1])) {
         advance();
         while (isDigit(peek())) advance();
         addToken(TOKEN_DOUBLE);

@@ -57,11 +57,12 @@ private:
     // Check current token
     Token peek();
     Token peekNext(); 
+    Token peekNextNext();
     
     // Consume current and move forward
     Token advance();
 
-    //Check specific token
+    //Check specific tokens
     Token consume(TokenType type, std::string message);
 };
 

@@ -1,0 +1,27 @@
+y[]
+x = [0, 1 , 2 , 3] // valid assignment
+
+itr = 0
+drimming itr < 10{
+    drim(y[itr]) // input values of array
+    //after the first input , it checks the new input type  
+    // if the types matches then proceeds to next input
+    // otherwise it throws an error: array value type is : X, must be matched
+    itr = itr + 1
+}
+
+itr = 0 
+drimming itr < 10 {
+    wake(y[itr]) //outputting values of array
+    itr = itr + 1
+}
+
+itr = 0 
+drimming itr < 10{
+    drim(j[itr]) 
+    //j is not assigned before 
+    // after the first input , it checks the new input type  
+    // if the types matches then proceeds to next input
+    // otherwise it throws an error: array value type is : X , must be matched
+    itr = itr + 1
+}
