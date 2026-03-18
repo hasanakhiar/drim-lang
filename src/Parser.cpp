@@ -329,7 +329,7 @@ std::shared_ptr<Stmt> Parser::statement() {
         }
 
         if (stmts.size() == 1) return stmts[0];
-        return std::make_shared<BlockStmt>(stmts);
+        return std::make_shared<SequenceStmt>(stmts);
     }
 
     // REPLACED SKIP FALLBACK

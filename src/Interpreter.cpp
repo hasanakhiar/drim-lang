@@ -397,6 +397,10 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
                 interpret(wrapper);
             }
         }
+        // SEQUENCE STATEMENT (comma-separated assignments)
+        else if (auto seq = std::dynamic_pointer_cast<SequenceStmt>(cmd)) {
+            interpret(seq->statements);
+        }
         // BLOCK STATEMENT { ... }
         else if (auto block = std::dynamic_pointer_cast<BlockStmt>(cmd)) {
             std::shared_ptr<Scope> previous = scope;

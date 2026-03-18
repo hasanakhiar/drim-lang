@@ -81,6 +81,14 @@ struct AssignStmt : Stmt {
     std::shared_ptr<Expr> value;
     AssignStmt(Token n, std::shared_ptr<Expr> v) : name(n), value(v) {}
 };
+
+// Represents a sequence of statements executed in current scope
+// (used for comma-separated assignments like: a = 1, b = 2)
+struct SequenceStmt : Stmt {
+    std::vector<std::shared_ptr<Stmt>> statements;
+    SequenceStmt(std::vector<std::shared_ptr<Stmt>> stmts) : statements(stmts) {}
+};
+
 struct TypeStmt : Stmt {
     std::shared_ptr<Expr> expression; // (variable or literal currently being checked)
     TypeStmt(std::shared_ptr<Expr> e) : expression(e) {}
