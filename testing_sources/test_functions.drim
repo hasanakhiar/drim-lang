@@ -1,0 +1,31 @@
+func add(a, b) {
+    return a + b
+}
+
+func say_hello(name) {
+    wake("Hello, " + name + "!")
+}
+
+{
+    func ret(N){
+        return N
+    }
+    wake("Testing ret inside: " + ret(10))
+}
+
+// wake("Testing ret OutSide: " + ret(22)) // Gives error
+
+result = add(10, 20)
+wake("10 + 20 = " + result)
+
+say_hello("Tester")
+
+func check_speed(s) {
+    if (s > 100) {
+        return "Fast"
+    }
+    return "Normal"
+}
+
+wake("Speed 120 is " + check_speed(120))
+wake("Speed 80 is " + check_speed(80))

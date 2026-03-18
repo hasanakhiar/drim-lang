@@ -246,10 +246,24 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
 }
 
 // Decides what kind of statement we are looking at
+
 std::shared_ptr<Stmt> Parser::statement() {
+
+    //0. FUNCTION Declaration & Return Stmt
+    if (check(KW_FUNC)) {
+        return functionDeclaration();
+    }
+
+    if (check(KW_RETURN)) {
+        return returnStatement();
+    }
+
     // 1. IF Statement
+
     if (check(KW_IF)) {
+
         return ifStatement();
+
     }
     // 1b. WHILE Statement (drimming)
     if (check(KW_DRIMMING)) {
@@ -265,9 +279,15 @@ std::shared_ptr<Stmt> Parser::statement() {
         advance();
         return std::make_shared<ContinueStmt>();
     }
+
     // 2. BLOCK Statement { ... }
+
     if (check(TOKEN_LBRACE)) {
+
+        advance(); // Consume '{'
+
         return std::make_shared<BlockStmt>(block());
+
     }
     // 3. INPUT (drim)
     if (check(KW_DRIM)) {
@@ -312,9 +332,10 @@ std::shared_ptr<Stmt> Parser::statement() {
         return std::make_shared<BlockStmt>(stmts);
     }
 
-    // Fallback: Skip token to avoid infinite loop on error
-    advance();
-    return nullptr; 
+    // REPLACED SKIP FALLBACK
+    std::shared_ptr<Expr> expr = expression();
+    return std::make_shared<ExprStmt>(expr);
+
 }
 
 std::shared_ptr<Stmt> Parser::ifStatement() {
@@ -376,4 +397,42 @@ std::shared_ptr<Stmt> Parser::whileStatement() {
     std::shared_ptr<Stmt> body = std::make_shared<BlockStmt>(bodyStmts);
 
     return std::make_shared<WhileStmt>(condition, body);
+}
+std::shared_ptr<Stmt> Parser::functionDeclaration() {
+    advance(); // consume "func"
+    Token name = consume(TOKEN_IDENTIFIER, "Expect function name.");
+
+    consume(TOKEN_LPAREN, "Expect '(' after function name.");
+    std::vector<Token> params;
+    if (!check(TOKEN_RPAREN)) {
+        do {
+            params.push_back(consume(TOKEN_IDENTIFIER, "Expect parameter name."));
+        }
+        while (check(TOKEN_COMMA) && advance().type == TOKEN_COMMA);
+    }
+    consume(TOKEN_RPAREN, "Expect ')' after parameters.");
+    consume(TOKEN_LBRACE, "Expect '{' before function body.");
+
+    std::vector<std::shared_ptr<Stmt>> body = block(); // take next whole {...}
+    return std::make_shared<FunctionStmt>(name, params, body);
+}
+
+std::shared_ptr<Stmt> Parser::returnStatement() {
+    Token keyword = advance(); // consume "return"
+    std::shared_ptr<Expr> value = nullptr;
+
+    // try to find value after return, for non-void function
+    // if void func, just skip the "value", just consume return
+
+    //if (!check(TOKEN_RBRACE) && !isAtEnd()) {
+
+    //only parse expr if the next token can actually be a expr
+    if (check(TOKEN_INT) || check(TOKEN_DOUBLE) || check(TOKEN_STRING) ||
+        check(TOKEN_TRUE) || check(TOKEN_FALSE) || check(TOKEN_IDENTIFIER) ||
+        check(KW_CONVERT) || check(TOKEN_LPAREN) || check(TOKEN_BIT_NOT)){
+        value = expression();
+    }
+
+    return std::make_shared<ReturnStmt>(keyword, value);
+
 }

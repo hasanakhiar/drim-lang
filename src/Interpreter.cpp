@@ -1,5 +1,4 @@
 #include "../include/Interpreter.h"
-#include "../include/Utils.h"
 #include "../include/Physics.h"
 #include "../include/Signal.h"
 #include <iostream>
@@ -55,11 +54,13 @@ double getDouble(const Value& v) {
     return 0.0;
 }
 
-Interpreter::Interpreter(){}
+Interpreter::Interpreter() {
+    scope = std::make_shared<Scope>();
+}
 
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
-    
-    // FUNCTION CALLS (Physics)
+
+    // FUNCTION CALLS
     if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
         std::string funcName;
         if (auto var = std::dynamic_pointer_cast<VariableExpr>(call->callee)) {
@@ -69,14 +70,59 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
              exit(1);
         }
 
+
+        // evaluate all the arguments first
+        std::vector<Value> argsValues;
+        for (auto arg : call->arguments) {
+            argsValues.push_back(evaluate(arg));
+        }
+
+        std::shared_ptr<FunctionStmt> func = scope->getFunc(funcName);
+
+        // check if its a user-defined func
+        if (func) {
+            //auto func = userFunctions[funcName];
+
+            // validate arg count
+            if (argsValues.size() != func->params.size()) {
+                std::cerr << "Runtime Error: Expected " << func->params.size() << " arguments but got " << argsValues.size() << ".\n";
+                exit(1);
+            }
+
+            // create a new LOCAL SCOPE for the func exec
+            // where parent = current scope (hopefully parent)
+
+            auto functionScope = std::make_shared<Scope>(scope);
+
+            // bind passed args to the func's local scope
+            for (size_t i = 0; i < argsValues.size(); i++) {
+                functionScope->define(func->params[i].lexeme, argsValues[i]);
+            }
+
+            // switch to the function's scope to run the body
+            // cus we are on the parent's body rn
+
+            auto previousScope = scope;
+            this->scope = functionScope;
+
+            Value result = 0;
+            try {
+                interpret(func->body);
+            } catch (ReturnValue& rv) {
+                result = rv.value; // Catch the return Value
+            }
+            this->scope = previousScope;
+            return result;
+        }
+
         Value args[255];
         size_t count = 0;
-        for (auto arg : call->arguments) {
+        for (auto arg : argsValues) {
             if (count >= 255) {
                 std::cerr << "Runtime Error: Too many arguments.\n";
                 exit(1);
             }
-            args[count++] = evaluate(arg);
+            args[count++] = arg;
         }
         return execPhysics(funcName, args, count);
     }
@@ -88,11 +134,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
     // VARIABLES
     if (auto var = std::dynamic_pointer_cast<VariableExpr>(expr)) {
-        if (memory.count(var->name.lexeme)) {
-            return memory[var->name.lexeme];
-        }
-        std::cerr << "Runtime Error: Undefined variable '" << var->name.lexeme << "'\n";
-        exit(1);
+        return scope->get(var->name);
     }
 
     // UNARY OPERATIONS (Bitwise NOT)
@@ -293,7 +335,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 }
 
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
-    for (auto cmd : commands) {
+    for (auto cmd : commands) { // cmd = every line of code
         if (!cmd) continue;
 
         // WHILE STATEMENT (drimming)
@@ -326,6 +368,22 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
             throw ContinueSignal();
         }
         
+
+        // Save Function Definition
+        if (auto funcStmt = std::dynamic_pointer_cast<FunctionStmt>(cmd)) {
+            scope->defineFunc(funcStmt->name.lexeme, funcStmt); // map -> (name, ptrToFunc)
+            continue;
+        }
+
+        // Handle Return
+        if (auto returnStmt = std::dynamic_pointer_cast<ReturnStmt>(cmd)) {
+            Value val = 0; // Default return 0
+            if (returnStmt->value) {
+                val = evaluate(returnStmt->value);
+            }
+            throw ReturnValue(val); // Jump out of the scope/ func body
+        }
+
         // IF STATEMENT
         if (auto ifStmt = std::dynamic_pointer_cast<IfStmt>(cmd)) {
             Value cond = evaluate(ifStmt->condition);
@@ -341,20 +399,24 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
         }
         // BLOCK STATEMENT { ... }
         else if (auto block = std::dynamic_pointer_cast<BlockStmt>(cmd)) {
-            interpret(block->statements); // Recursively execute the list inside
+            std::shared_ptr<Scope> previous = scope;
+            scope = std::make_shared<Scope>(previous);
+            
+            interpret(block->statements);
+            
+            scope = previous;
         }
         // Input
         else if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
-            //std::cout << "drim input " << input->name.lexeme << ": ";
             if (std::getline(std::cin, userText)) {
-                memory[input->name.lexeme] = parseInput(userText);
+                scope->assign(input->name, parseInput(userText));
             }
         }
         // Assignment
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
             Value val = evaluate(assign->value);
-            memory[assign->name.lexeme] = val;
+            scope->assign(assign->name, val);
         }
         // PRINT (wake)
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
@@ -370,6 +432,10 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
             else if (std::holds_alternative<double>(valToCheck)) std::cout << "<type 'float'>\n";
             else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";   
             else if (std::holds_alternative<bool>(valToCheck)) std::cout << "<type 'bool'>\n";
+        }
+        // if Stmt is just a EXPR
+        else if (auto exprStmt = std::dynamic_pointer_cast<ExprStmt>(cmd)) {
+            evaluate(exprStmt->expression);
         }
     }
 }
