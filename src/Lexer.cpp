@@ -19,6 +19,8 @@ void Lexer::scanToken() {
     switch (c) {
         case '(': addToken(TOKEN_LPAREN); break;
         case ')': addToken(TOKEN_RPAREN); break;
+        case '[': addToken(TOKEN_LBRACKET); break;
+        case ']': addToken(TOKEN_RBRACKET); break;
         case '{': addToken(TOKEN_LBRACE); break;
         case '}': addToken(TOKEN_RBRACE); break;
         case ',': addToken(TOKEN_COMMA); break;

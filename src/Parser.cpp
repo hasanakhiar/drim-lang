@@ -15,6 +15,12 @@ Token Parser::peekNext() {
     return tokens[current + 1];
 }
 
+Token Parser::peekAt(int offset) {
+    int index = current + offset;
+    if (index < 0 || index >= tokens.size()) return tokens.back();
+    return tokens[index];
+}
+
 Token Parser::advance() {
     if (current < tokens.size()) current++;
     return tokens[current - 1];
@@ -170,6 +176,18 @@ std::shared_ptr<Expr> Parser::unary() {
 
 // === PRIMARY PARSING (Highest Priority: literals, vars, parens) ===
 std::shared_ptr<Expr> Parser::primary() {
+    if (check(TOKEN_LBRACKET)) {
+        advance(); // consume '['
+        std::vector<std::shared_ptr<Expr>> elements;
+        if (!check(TOKEN_RBRACKET)) {
+            do {
+                elements.push_back(expression());
+            } while (check(TOKEN_COMMA) && advance().type == TOKEN_COMMA);
+        }
+        consume(TOKEN_RBRACKET, "Expect ']' after array literal.");
+        return std::make_shared<ArrayLiteralExpr>(elements);
+    }
+
     if (check(TOKEN_INT)) {
         int val = std::stoi(advance().lexeme);
         return std::make_shared<LiteralExpr>(val);
@@ -195,6 +213,13 @@ std::shared_ptr<Expr> Parser::primary() {
 
     if (check(TOKEN_IDENTIFIER)) {
         Token name = advance();
+
+        if (check(TOKEN_LBRACKET)) {
+            advance(); // eat '['
+            std::shared_ptr<Expr> index = expression();
+            consume(TOKEN_RBRACKET, "Expect ']' after array index.");
+            return std::make_shared<ArrayAccessExpr>(name, index);
+        }
         
         // Check for Function Call: identifier followed by '('
         if (check(TOKEN_LPAREN)) {
@@ -292,9 +317,15 @@ std::shared_ptr<Stmt> Parser::statement() {
     // 3. INPUT (drim)
     if (check(KW_DRIM)) {
         advance(); consume(TOKEN_LPAREN, "Expect '('");
-        Token name = consume(TOKEN_IDENTIFIER, "Expect var name");
+        std::shared_ptr<Expr> target = expression();
+        bool validTarget = std::dynamic_pointer_cast<VariableExpr>(target) != nullptr ||
+                           std::dynamic_pointer_cast<ArrayAccessExpr>(target) != nullptr;
+        if (!validTarget) {
+            std::cerr << "Error: drim target must be a variable or array element on line " << peek().line << "\n";
+            exit(1);
+        }
         consume(TOKEN_RPAREN, "Expect ')'");
-        return std::make_shared<InputStmt>(name);
+        return std::make_shared<InputStmt>(target);
     }
     // 4. PRINT (wake)
     if (check(KW_WAKE)) {
@@ -310,11 +341,22 @@ std::shared_ptr<Stmt> Parser::statement() {
          consume(TOKEN_RPAREN, "Expect ')'");
          return std::make_shared<TypeStmt>(val);
     }
+    // 6. ARRAY DECLARATION (name[])
+    if (check(TOKEN_IDENTIFIER) && peekAt(1).type == TOKEN_LBRACKET && peekAt(2).type == TOKEN_RBRACKET) {
+        Token name = advance();
+        advance(); // consume '['
+        advance(); // consume ']'
+        return std::make_shared<ArrayDeclStmt>(name);
+    }
     // 6. ASSIGNMENT (var = val)
     if (check(TOKEN_IDENTIFIER) && peekNext().type == TOKEN_ASSIGN) {
         Token name = advance();
         advance(); // Eat '='
         std::shared_ptr<Expr> value = expression();
+
+        if (auto arrayLiteral = std::dynamic_pointer_cast<ArrayLiteralExpr>(value)) {
+            return std::make_shared<ArrayAssignStmt>(name, arrayLiteral);
+        }
 
         std::vector<std::shared_ptr<Stmt>> stmts;
         stmts.push_back(std::make_shared<AssignStmt>(name, value));
@@ -330,6 +372,17 @@ std::shared_ptr<Stmt> Parser::statement() {
 
         if (stmts.size() == 1) return stmts[0];
         return std::make_shared<SequenceStmt>(stmts);
+    }
+
+    // 7. ARRAY ELEMENT ASSIGNMENT (name[index] = value)
+    if (check(TOKEN_IDENTIFIER) && peekAt(1).type == TOKEN_LBRACKET) {
+        Token name = advance();
+        advance(); // consume '['
+        std::shared_ptr<Expr> index = expression();
+        consume(TOKEN_RBRACKET, "Expect ']' after array index.");
+        consume(TOKEN_ASSIGN, "Expect '=' after array index.");
+        std::shared_ptr<Expr> value = expression();
+        return std::make_shared<ArrayElementAssignStmt>(name, index, value);
     }
 
     // REPLACED SKIP FALLBACK

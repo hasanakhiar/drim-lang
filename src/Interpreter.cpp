@@ -60,6 +60,21 @@ Interpreter::Interpreter() {
 
 Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
+    if (auto access = std::dynamic_pointer_cast<ArrayAccessExpr>(expr)) {
+        Value indexVal = evaluate(access->index);
+        if (!std::holds_alternative<int>(indexVal)) {
+            std::cerr << "Runtime Error: Array index must be int for '" << access->name.lexeme << "'\n";
+            exit(1);
+        }
+        int index = std::get<int>(indexVal);
+        return scope->getArrayElement(access->name, index);
+    }
+
+    if (auto arrLiteral = std::dynamic_pointer_cast<ArrayLiteralExpr>(expr)) {
+        std::cerr << "Runtime Error: Array literal is only valid in assignment\n";
+        exit(1);
+    }
+
     // FUNCTION CALLS
     if (auto call = std::dynamic_pointer_cast<CallExpr>(expr)) {
         std::string funcName;
@@ -414,13 +429,49 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
         else if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
             if (std::getline(std::cin, userText)) {
-                scope->assign(input->name, parseInput(userText));
+                Value parsed = parseInput(userText);
+
+                if (auto var = std::dynamic_pointer_cast<VariableExpr>(input->target)) {
+                    scope->assign(var->name, parsed);
+                } else if (auto arr = std::dynamic_pointer_cast<ArrayAccessExpr>(input->target)) {
+                    Value indexVal = evaluate(arr->index);
+                    if (!std::holds_alternative<int>(indexVal)) {
+                        std::cerr << "Runtime Error: Array index must be int for '" << arr->name.lexeme << "'\n";
+                        exit(1);
+                    }
+                    scope->assignArrayElement(arr->name, std::get<int>(indexVal), parsed);
+                } else {
+                    std::cerr << "Runtime Error: Invalid drim target\n";
+                    exit(1);
+                }
             }
         }
         // Assignment
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
             Value val = evaluate(assign->value);
             scope->assign(assign->name, val);
+        }
+        // Array declaration
+        else if (auto arrDecl = std::dynamic_pointer_cast<ArrayDeclStmt>(cmd)) {
+            scope->declareArray(arrDecl->name);
+        }
+        // Whole-array assignment (x = [1,2,3])
+        else if (auto arrAssign = std::dynamic_pointer_cast<ArrayAssignStmt>(cmd)) {
+            std::vector<Value> elements;
+            for (auto elementExpr : arrAssign->value->elements) {
+                elements.push_back(evaluate(elementExpr));
+            }
+            scope->assignArray(arrAssign->name, elements);
+        }
+        // Element assignment (x[i] = value)
+        else if (auto arrElemAssign = std::dynamic_pointer_cast<ArrayElementAssignStmt>(cmd)) {
+            Value indexVal = evaluate(arrElemAssign->index);
+            if (!std::holds_alternative<int>(indexVal)) {
+                std::cerr << "Runtime Error: Array index must be int for '" << arrElemAssign->name.lexeme << "'\n";
+                exit(1);
+            }
+            Value elementValue = evaluate(arrElemAssign->value);
+            scope->assignArrayElement(arrElemAssign->name, std::get<int>(indexVal), elementValue);
         }
         // PRINT (wake)
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
