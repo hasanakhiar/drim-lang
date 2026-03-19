@@ -7,6 +7,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <vector>
 
 struct FunctionStmt;
 
@@ -15,8 +16,38 @@ struct FunctionStmt;
 class Scope {
     std::shared_ptr<Scope> enclosing; // Parent scope
     std::map<std::string, Value> values;
+    std::map<std::string, std::vector<Value>> arrays;
+    std::map<std::string, std::string> arrayElementTypes;
     // Map for user-defined func
     std::map<std::string, std::shared_ptr<FunctionStmt>> functions;
+
+    std::string inferValueTypeName(const Value& value) {
+        if (std::holds_alternative<int>(value)) return "int";
+        if (std::holds_alternative<double>(value)) return "float";
+        if (std::holds_alternative<std::string>(value)) return "string";
+        if (std::holds_alternative<bool>(value)) return "bool";
+        return "unknown";
+    }
+
+    Scope* findArrayOwner(const std::string& name) {
+        if (arrays.count(name)) return this;
+        if (enclosing) return enclosing->findArrayOwner(name);
+        return nullptr;
+    }
+
+    Scope* findValueOwner(const std::string& name) {
+        if (values.count(name)) return this;
+        if (enclosing) return enclosing->findValueOwner(name);
+        return nullptr;
+    }
+
+    Scope* rootScope() {
+        Scope* current = this;
+        while (current->enclosing) {
+            current = current->enclosing.get();
+        }
+        return current;
+    }
 
 public:
     Scope() : enclosing(nullptr) {}
@@ -33,6 +64,10 @@ public:
     }
 
     void assign(const Token& name, Value value) {
+        if (hasArray(name.lexeme)) {
+            std::cerr << "Runtime Error: '" << name.lexeme << "' is an array, cannot assign scalar value\n";
+            exit(1);
+        }
         if (values.count(name.lexeme)) {
             values[name.lexeme] = value;
         } else if (enclosing && enclosing->contains(name.lexeme)) {
@@ -60,6 +95,104 @@ public:
     //Define a variable strictly in the current scope (for the params)
     void define (const std::string& name, Value value) {
         values[name] = value;
+    }
+
+    bool hasArray(const std::string& name) {
+        if (arrays.count(name)) return true;
+        if (enclosing) return enclosing->hasArray(name);
+        return false;
+    }
+
+    void declareArray(const Token& name) {
+        if (values.count(name.lexeme)) {
+            std::cerr << "Runtime Error: '" << name.lexeme << "' already exists as a variable in current scope\n";
+            exit(1);
+        }
+        if (!arrays.count(name.lexeme)) {
+            arrays[name.lexeme] = {};
+            arrayElementTypes[name.lexeme] = "";
+        }
+    }
+
+    void assignArray(const Token& name, const std::vector<Value>& elements) {
+        if (findValueOwner(name.lexeme)) {
+            std::cerr << "Runtime Error: '" << name.lexeme << "' already exists as a variable\n";
+            exit(1);
+        }
+
+        std::string inferred = "";
+        for (const auto& element : elements) {
+            std::string currentType = inferValueTypeName(element);
+            if (inferred.empty()) {
+                inferred = currentType;
+            } else if (currentType != inferred) {
+                std::cerr << "Runtime Error: Mixed array literal types for '" << name.lexeme
+                          << "'. Expected " << inferred << " but got " << currentType << "\n";
+                exit(1);
+            }
+        }
+
+        Scope* owner = findArrayOwner(name.lexeme);
+        if (!owner) owner = this;
+        owner->arrays[name.lexeme] = elements;
+        owner->arrayElementTypes[name.lexeme] = inferred;
+    }
+
+    void assignArrayElement(const Token& name, int index, Value value) {
+        if (index < 0) {
+            std::cerr << "Runtime Error: Array index cannot be negative for '" << name.lexeme << "'\n";
+            exit(1);
+        }
+
+        if (findValueOwner(name.lexeme)) {
+            std::cerr << "Runtime Error: '" << name.lexeme << "' is a variable, not an array\n";
+            exit(1);
+        }
+
+        Scope* owner = findArrayOwner(name.lexeme);
+        if (!owner) {
+            owner = rootScope();
+            owner->arrays[name.lexeme] = {};
+            owner->arrayElementTypes[name.lexeme] = "";
+        }
+
+        std::string currentType = inferValueTypeName(value);
+        std::string& expectedType = owner->arrayElementTypes[name.lexeme];
+        if (expectedType.empty()) {
+            expectedType = currentType;
+        } else if (expectedType != currentType) {
+            std::cerr << "Runtime Error: Array value type is '" << currentType
+                      << "', must be matched with '" << expectedType << "' for array '"
+                      << name.lexeme << "'\n";
+            exit(1);
+        }
+
+        std::vector<Value>& arr = owner->arrays[name.lexeme];
+        if (index >= static_cast<int>(arr.size())) {
+            arr.resize(index + 1, 0);
+        }
+        arr[index] = value;
+    }
+
+    Value getArrayElement(const Token& name, int index) {
+        if (index < 0) {
+            std::cerr << "Runtime Error: Array index cannot be negative for '" << name.lexeme << "'\n";
+            exit(1);
+        }
+
+        Scope* owner = findArrayOwner(name.lexeme);
+        if (!owner) {
+            std::cerr << "Runtime Error: Undefined array '" << name.lexeme << "'\n";
+            exit(1);
+        }
+
+        std::vector<Value>& arr = owner->arrays[name.lexeme];
+        if (index >= static_cast<int>(arr.size())) {
+            std::cerr << "Runtime Error: Array index out of bounds for '" << name.lexeme << "'\n";
+            exit(1);
+        }
+
+        return arr[index];
     }
 
     void defineFunc(const std::string& name, std::shared_ptr<FunctionStmt> func) {

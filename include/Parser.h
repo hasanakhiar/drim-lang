@@ -57,6 +57,7 @@ private:
     // Check current token
     Token peek();
     Token peekNext(); 
+    Token peekAt(int offset);
     
     // Consume current and move forward
     Token advance();

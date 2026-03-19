@@ -57,6 +57,17 @@ struct CallExpr : Expr {
         : callee(c), paren(p), arguments(args) {}
 };
 
+struct ArrayLiteralExpr : Expr {
+    std::vector<std::shared_ptr<Expr>> elements;
+    ArrayLiteralExpr(std::vector<std::shared_ptr<Expr>> elems) : elements(elems) {}
+};
+
+struct ArrayAccessExpr : Expr {
+    Token name;
+    std::shared_ptr<Expr> index;
+    ArrayAccessExpr(Token n, std::shared_ptr<Expr> i) : name(n), index(i) {}
+};
+
 struct ConvertExpr : Expr {
     std::shared_ptr<Expr> value;
     std::shared_ptr<Expr> mode;
@@ -65,8 +76,8 @@ struct ConvertExpr : Expr {
 
 // 3. The Commands (Statements) -- Command: drim(x)
 struct InputStmt : Stmt {
-    Token name;
-    InputStmt(Token n) : name(n) {}
+    std::shared_ptr<Expr> target;
+    InputStmt(std::shared_ptr<Expr> t) : target(t) {}
 };
 
 // Command: wake("hello")
@@ -80,6 +91,25 @@ struct AssignStmt : Stmt {
     Token name;
     std::shared_ptr<Expr> value;
     AssignStmt(Token n, std::shared_ptr<Expr> v) : name(n), value(v) {}
+};
+
+struct ArrayAssignStmt : Stmt {
+    Token name;
+    std::shared_ptr<ArrayLiteralExpr> value;
+    ArrayAssignStmt(Token n, std::shared_ptr<ArrayLiteralExpr> v) : name(n), value(v) {}
+};
+
+struct ArrayElementAssignStmt : Stmt {
+    Token name;
+    std::shared_ptr<Expr> index;
+    std::shared_ptr<Expr> value;
+    ArrayElementAssignStmt(Token n, std::shared_ptr<Expr> i, std::shared_ptr<Expr> v)
+        : name(n), index(i), value(v) {}
+};
+
+struct ArrayDeclStmt : Stmt {
+    Token name;
+    ArrayDeclStmt(Token n) : name(n) {}
 };
 
 // Represents a sequence of statements executed in current scope

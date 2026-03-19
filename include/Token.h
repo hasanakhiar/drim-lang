@@ -53,6 +53,8 @@ enum TokenType {
     // Syntax
     TOKEN_LPAREN,     // (
     TOKEN_RPAREN,     // )
+    TOKEN_LBRACKET,   // [
+    TOKEN_RBRACKET,   // ]
     TOKEN_ASSIGN,     // =
     TOKEN_COMMA,      // ,
     TOKEN_LBRACE,     // {
