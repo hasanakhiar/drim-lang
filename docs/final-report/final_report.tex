@@ -118,16 +118,20 @@ The following features were implemented:
     \item \textbf{Input/Output:} Accepts user input through the \texttt{drimIn()} command and shows output using \texttt{wakeOut()}.
     \item \textbf{Automatic Variable Assignment:} If a value is assigned to a variable that hasn't been created yet, the system automatically creates it with the correct type.
     \item \textbf{Dynamic Type Casting:} Variables can hold different types like Strings, Integers, or Booleans, and the system handles the conversion automatically.
-    \item \textbf{Mathematical Operations:} Full support for math like addition (+), subtraction (-), multiplication (*), division (/), modulo (\%), and power ($\wedge$).
+    \item \textbf{High-Precision Calculations:} Implementation of \textbf{int64} support for larger integer calculations and increased internal precision.
+    \item \textbf{Mathematical Operations:} Full support for arithmetic including addition (+), subtraction (-), multiplication (*), division (/), modulo (\%), and power ($\wedge$).
+    \item \textbf{Bitwise Operations:} Supports bitwise AND (\&), OR ($|$), NOT ($\sim$), and bit-shifting (<<, >>) for low-level data manipulation.
+    \item \textbf{Comparison \& Logical Operators:} Full set of comparison operators ($<, >, <=, >=, ==, !=$) and logical operators (\texttt{and}, \texttt{or}) for complex decision making.
     \item \textbf{Built-in Physics Functions:} Direct support for formulas like mass-energy ($E=mc^2$), force ($F=ma$), and more.
     \item \textbf{Unit Conversion Engine:} Built-in tools to convert between things like inches and centimeters, Fahrenheit and Celsius, or kilometers and feet.
-    \item \textbf{Control Flow:} Supports conditional logic (if-else) and loops (\texttt{drimming}).
+    \item \textbf{Control Flow:} Supports conditional logic (if-else), loops (\texttt{drimming}), and loop control using \texttt{stopdrim} (break) and \texttt{drimagain} (continue).
     \item \textbf{Custom Syntax:} Uses unique keywords like \texttt{drimming} for loops and \texttt{wakeOut} for output to match the project's theme.
     \item \textbf{String Interpolation:} Allows variables to be put directly inside strings (like \texttt{"Value: \{x\}"}) for easier printing.
     \item \textbf{Error Reporting:} Provides clear error messages with exact locations when something goes wrong in the code.
     \item \textbf{Headless Execution:} Runs as a lightweight tool in the terminal without needing a complex interface.
     \item \textbf{Zero-Dependency Architecture:} Built from scratch in C++ 17 without using any external libraries for parsing.
     \item \textbf{Multi-Assignment:} Allows assigning values to multiple variables at once using commas.
+    \item \textbf{Type Checking:} Built-in support for identifying variable types at runtime using the \texttt{type()} keyword.
     \item \textbf{Scoped Variables:} Ensures variables stay within the block where they were created.
     \item \textbf{User-Defined Functions:} Users can create their own functions that run during the program.
 \end{itemize}
