@@ -42,7 +42,7 @@
 \begin{titlepage}
     \begin{figure}[!h]
         \centering
-        \includegraphics[width=.2\textwidth]{../Project Report/images/iut_logo.png}
+        \includegraphics[width=.2\textwidth]{images/iut_logo.png}
     \end{figure}
     \begin{center}
         \noindent\rule{\textwidth}{1.5pt}
@@ -81,19 +81,19 @@
 \section{Problem Statement}
 Standard programming languages can be hard for beginners because they require manual memory management and strict variable declarations. This adds a lot of extra work when someone just wants to write and run code quickly, specially beginners. 
 
-\vspace{0.8cm}
+\vspace{0.4cm}
 
 Another problem is that most languages do not have built-in functions for things like physics formulas or unit conversions, forcing users to find and import external libraries. 
 
-\vspace{0.8cm}
+\vspace{0.4cm}
 
 Beyond these technical issues, we also wanted to address a personal motivation. The name \textbf{“Drim”} started as an inside joke and a meme in our student batch from our first day at university. We wanted to build something that would keep this memory alive through custom keywords like \texttt{drimIn} and \texttt{drimming}. 
 
-\vspace{0.8cm}
+\vspace{0.4cm}
 
 From an engineering perspective, we also wanted to master language design and memory management by building every component manually, without relying on third-party libraries.
 
-\newpage
+\vspace{1cm}
 
 \section{Potential Solution}
 To solve these problems, a new interpreted language called ``Drim'' was created. It is designed to be simple and easy to use for beginners. \textbf{Drim} is a custom-built, lightweight language that runs as a Command Line Interface (CLI) tool. It uses a \textbf{Tree-Walk Interpreter}, which means it reads \texttt{.drim} files, understands the code, and runs it directly in real-time. Everything in Drim was built from scratch using \textbf{C++ 17} to ensure full control over the language pipeline.
@@ -109,7 +109,7 @@ The project includes a complete system for reading, parsing, and running code. T
 
 \begin{figure}[!h]
     \centering
-    % \includegraphics[width=0.6\linewidth]{images/FlowchartPlaceholder.png}
+    \includegraphics[width=1\linewidth]{images/sysArc.png}
     \caption{System Architecture Flow: From Source Code to Execution}
 \end{figure}
 
@@ -145,6 +145,17 @@ The following class diagram represents the structure and relationships between t
 
 \newpage
 
+\section{Design Principles}
+The development of Drim was guided by the \textbf{SOLID} principles of object-oriented design to ensure the codebase remains maintainable and scalable:
+
+\begin{itemize}
+    \item \textbf{Single Responsibility Principle (SRP):} Each core component is dedicated to a specific task. The \texttt{Lexer} is responsible solely for tokenization, the \texttt{Parser} for syntax validation and AST construction, and the \texttt{Interpreter} for logic execution. This separation ensures that changes to the grammar do not affect the execution engine.
+    \item \textbf{Liskov Substitution Principle (LSP):} The Abstract Syntax Tree (AST) is built on a hierarchy where every specific expression (e.g., \texttt{BinaryExpr}, \texttt{LiteralExpr}) can be treated as a base \texttt{Expr} object. This allows the interpreter to process any node in the tree uniformly.
+    \item \textbf{Dependency Inversion Principle (DIP):} High-level execution logic in the \texttt{Interpreter} depends on abstract \texttt{Expr} and \texttt{Stmt} classes rather than concrete implementations. This decoupling allows for the easy addition of new language features without modifying the core execution loop.
+\end{itemize}
+
+\vspace{1cm}
+
 \section{Tools and Technology}
 The project used the following tools:
 \begin{itemize}
@@ -158,9 +169,9 @@ The project used the following tools:
 \newpage
 
 \section{Application Domain}
-The project belongs to the domain of \textbf{Custom Programming Language Design}. It is built to show how an interpreter works and to provide a specialized tool for people who need quick calculations for physics and general unit conversions. For those who want to start programming without worrying about complex syntax and memory management, Drim offers a simple and user-friendly environment.
+The project belongs to the domain of \textbf{Custom Programming Language Design}. It is built to learn about how an interpreter actually works and to provide a specialized tool for people who need quick calculations for physics and general unit conversions. For those who want to start programming without worrying about complex syntax and memory management, Drim offers a simple and user-friendly environment.
 
-\newpage
+\vspace{1cm}
 
 \section{Project Timeline}
 The project was built in stages, starting with simple text reading and moving to complex features like functions and loops.
@@ -200,15 +211,16 @@ The work was divided among the team members as follows:
     \end{itemize}
 \end{itemize}
 
-\newpage
+\vspace{1cm}
 
 \section{Future Work}
 We plan to keep improving Drim by adding more features. This includes adding many more functions for physics and unit conversions to make the language more useful. We also want to refine the core system and add more complex data structures. Other students have already started contributing on their forks, such as adding color highlighting for keywords, which we might include in the future.
 
-\newpage
+\vspace{1cm}
 
 \section{Source Repository}
 The code is available at: \\
 \url{https://github.com/hasanakhiar/drim-lang}
 
+\label{LastPage}
 \end{document}
