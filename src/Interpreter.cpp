@@ -77,8 +77,8 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             args[count++] = evaluate(arg);
         }
         
-        // Check if it's a Stack/DS function
-        if (funcName.find("stack_") == 0) {
+        // Check if it's a Stack/Queue function
+        if (funcName.find("stack_") == 0 || funcName.find("queue_") == 0) {
             return execDS(funcName, args, count);
         }
 
@@ -230,7 +230,7 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
                 if (auto d = std::get_if<long double>(&v.data)) return std::to_string(*d);
                 if (auto b = std::get_if<bool>(&v.data)) return *b ? "true" : "false";        
                 if (auto s = std::get_if<std::string>(&v.data)) return *s;
-                return "<stack>";
+                return "<collection>";
             };
             return toStr(leftVal) + toStr(rightVal);
         }
@@ -276,7 +276,7 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
             else if (std::holds_alternative<long double>(valToCheck.data)) std::cout << "<type 'float'>\n";
             else if (std::holds_alternative<std::string>(valToCheck.data)) std::cout << "<type 'string'>\n";   
             else if (std::holds_alternative<bool>(valToCheck.data)) std::cout << "<type 'bool'>\n";
-            else std::cout << "<type 'stack'>\n";
+            else std::cout << "<type 'collection'>\n";
         }
     }
 }
