@@ -115,7 +115,7 @@ The project includes a complete system for reading, parsing, and running code. T
 
 The following features were implemented:
 \begin{itemize}
-    \item \textbf{Input/Output:} Accepts user input through the \texttt{drimIn()} command and shows output using \texttt{wakeOut()}.
+    \item \textbf{Input/Output:} Accepts user input through the \texttt{drim()} (input) command and shows output using \texttt{wake()} (output).
     \item \textbf{Automatic Variable Assignment:} If a value is assigned to a variable that hasn't been created yet, the system automatically creates it with the correct type.
     \item \textbf{Dynamic Type Casting:} Variables can hold different types like Strings, Integers, or Booleans, and the system handles the conversion automatically.
     \item \textbf{Data Structures Library:} Built-in support for fundamental data structures, including \textbf{Stacks} and \textbf{Queues}, for advanced data management.
@@ -154,7 +154,7 @@ The following class diagram represents the structure and relationships between t
 The development of Drim was guided by the \textbf{SOLID} principles of object-oriented design to ensure the codebase remains maintainable and scalable:
 
 \begin{itemize}
-    \item \textbf{Single Responsibility Principle (SRP):} Each core component is dedicated to a specific task. The \texttt{Lexer} is responsible solely for tokenization, the \texttt{Parser} for syntax validation and AST construction, and the \texttt{Interpreter} for logic execution. This separation ensures that changes to the grammar do not affect the execution engine.
+    \item \textbf{Single Responsibility Principle (SRP):} Each core component is dedicated to a specific task. The \texttt{Lexer} is responsible solely for tokenization, and the \texttt{Interpreter} for logic execution. This separation ensures that changes to the grammar do not affect the execution engine.
     \item \textbf{Liskov Substitution Principle (LSP):} The Abstract Syntax Tree (AST) is built on a hierarchy where every specific expression (e.g., \texttt{BinaryExpr}, \texttt{LiteralExpr}) can be treated as a base \texttt{Expr} object. This allows the interpreter to process any node in the tree uniformly.
     \item \textbf{Dependency Inversion Principle (DIP):} High-level execution logic in the \texttt{Interpreter} depends on abstract \texttt{Expr} and \texttt{Stmt} classes rather than concrete implementations. This decoupling allows for the easy addition of new language features without modifying the core execution loop.
 \end{itemize}
@@ -193,11 +193,11 @@ The work was divided among the team members as follows:
 \begin{itemize}
     \item \textbf{Md. Muntahi Hasan Akhiar:}
     \begin{itemize}
-        \item Created basic input and output systems.
+        \item Created basic input and output systems and basic architecure of lexer, parser, and interpreter.
         \item Implemented variable management and automatic type casting.
         \item Developed conditional logic and loops (\texttt{drimming}).
         \item Added support for arrays and multi-assignment syntax.
-        \item Fixed modulo operations for math.
+        \item Added modulo operations for math.
     \end{itemize}
     \item \textbf{S.M. Tahsinuzzaman Emon:}
     \begin{itemize}
