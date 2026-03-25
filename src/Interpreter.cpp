@@ -59,6 +59,15 @@ long double getLongDouble(const Value& v) {
     return 0.0L;
 }
 
+// Helper to convert Value to String
+std::string valToString(const Value& v) {
+    if (auto i = std::get_if<long long>(&v.data)) return std::to_string(*i);
+    if (auto d = std::get_if<long double>(&v.data)) return std::to_string(*d);
+    if (auto b = std::get_if<bool>(&v.data)) return *b ? "true" : "false";
+    if (auto s = std::get_if<std::string>(&v.data)) return *s;
+    return "<collection>";
+}
+
 Interpreter::Interpreter() {
     scope = std::make_shared<Scope>();
 }
@@ -136,6 +145,54 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
     }
 
     if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(expr)) {
+        if (auto s = std::get_if<std::string>(&lit->value.data)) {
+            std::string text = *s;
+            std::string result = "";
+            size_t start = 0;
+            
+            while (true) {
+                size_t openBrace = text.find('{', start);
+                
+                // If found brace is escaped (preceded by \), skip it
+                while (openBrace != std::string::npos && openBrace > 0 && text[openBrace - 1] == '\\') {
+                    // Remove the backslash from the result
+                    result += text.substr(start, openBrace - 1 - start); 
+                    result += '{'; 
+                    start = openBrace + 1;
+                    openBrace = text.find('{', start);
+                }
+
+                if (openBrace == std::string::npos) {
+                    result += text.substr(start);
+                    break;
+                }
+                
+                result += text.substr(start, openBrace - start);
+                size_t closeBrace = text.find('}', openBrace);
+                
+                // If closing brace is escaped, unescape it and continue searching
+                while (closeBrace != std::string::npos && closeBrace > 0 && text[closeBrace - 1] == '\\') {
+                    // We found \{...\} - this is tricky because we might have skipped the real closing brace
+                    // For now, let's just find the NEXT closing brace
+                    closeBrace = text.find('}', closeBrace + 1);
+                }
+                
+                if (closeBrace == std::string::npos) {
+                    result += text.substr(openBrace);
+                    break;
+                }
+                
+                std::string varName = text.substr(openBrace + 1, closeBrace - openBrace - 1);
+                // Look up the variable in the current scope
+                Token dummyToken = {TOKEN_IDENTIFIER, varName, 0};
+                // Scope::get exits on failure, so we rely on that strict behavior
+                Value varVal = scope->get(dummyToken);
+                result += valToString(varVal);
+                
+                start = closeBrace + 1;
+            }
+            return Value(result);
+        }
         return lit->value;
     }
 

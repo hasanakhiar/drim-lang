@@ -1,0 +1,21 @@
+// String Interpolation Test
+name = "Drimmer"
+score = 100
+pi = 3.14159
+
+wake("Hello, {name}!")
+wake("Your score is: {score}")
+wake("The value of PI is roughly {pi}")
+
+// Multi-variable interpolation
+wake("{name} has {score} points.")
+
+// Edge case: invalid variable
+// wake("This is {missing_var}")
+
+// Edge case: unclosed brace
+wake("Incomplete brace {name")
+
+// Edge case: Escaped braces
+wake("This is a literal brace: \{ and \}")
+wake("Escaped inside interpolation: {name} says \{Hello\}")
