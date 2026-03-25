@@ -3,12 +3,12 @@
 #include <cmath>
 #include <variant>
 
-// Helper to get double args
-double getNum(const Value* args, size_t count, size_t index) {
+// Helper to get long double args
+long double getNum(const Value* args, size_t count, size_t index) {
     if (index >= count) return 0.0;
     const Value& v = args[index];
-    if (std::holds_alternative<int>(v)) return (double)std::get<int>(v);
-    if (std::holds_alternative<double>(v)) return std::get<double>(v);
+    if (auto i = std::get_if<long long>(&v.data)) return (long double)*i;
+    if (auto d = std::get_if<long double>(&v.data)) return *d;
     return 0.0;
 }
 
@@ -19,9 +19,9 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
             std::cerr << "Error: speed(distance, time) expects 2 arguments.\n"; 
             exit(1); 
         }
-        double d = getNum(args, count, 0);
-        double t = getNum(args, count, 1);
-        if (t == 0) return 0.0;
+        long double d = getNum(args, count, 0);
+        long double t = getNum(args, count, 1);
+        if (t == 0) return 0.0L;
         return d / t;
     }
 
@@ -30,9 +30,9 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
             std::cerr << "Error: velocity(displacement, time) expects 2 arguments.\n"; 
             exit(1); 
         }
-        double d = getNum(args, count, 0);
-        double t = getNum(args, count, 1);
-        if (t == 0) return 0.0;
+        long double d = getNum(args, count, 0);
+        long double t = getNum(args, count, 1);
+        if (t == 0) return 0.0L;
         return d / t;
     }
 
@@ -41,10 +41,10 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
             std::cerr << "Error: acceleration(vf, vi, t) expects 3 arguments.\n"; 
             exit(1); 
         }
-        double vf = getNum(args, count, 0);
-        double vi = getNum(args, count, 1);
-        double t = getNum(args, count, 2);
-        if (t == 0) return 0.0;
+        long double vf = getNum(args, count, 0);
+        long double vi = getNum(args, count, 1);
+        long double t = getNum(args, count, 2);
+        if (t == 0) return 0.0L;
         return (vf - vi) / t;
     }
 
@@ -61,9 +61,9 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
             std::cerr << "Error: final_velocity(u, a, t) expects 3 arguments.\n";
             exit(1);
         }
-        double u = getNum(args, count, 0);
-        double a = getNum(args, count, 1);
-        double t = getNum(args, count, 2);
+        long double u = getNum(args, count, 0);
+        long double a = getNum(args, count, 1);
+        long double t = getNum(args, count, 2);
         return u + (a * t);
     }
 
@@ -89,9 +89,9 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: pressure(F, A) expects 2 arguments.\n";
              exit(1);
         }
-        double F = getNum(args, count, 0);
-        double A = getNum(args, count, 1);
-        if (A == 0) return 0.0;
+        long double F = getNum(args, count, 0);
+        long double A = getNum(args, count, 1);
+        if (A == 0) return 0.0L;
         return F / A;
     }
 
@@ -125,9 +125,9 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: kinetic_energy(m, v) expects 2 arguments.\n";
              exit(1);
         }
-        double m = getNum(args, count, 0);
-        double v = getNum(args, count, 1);
-        return 0.5 * m * v * v;
+        long double m = getNum(args, count, 0);
+        long double v = getNum(args, count, 1);
+        return 0.5L * m * v * v;
     }
 
     if (name == "potential_energy") {
@@ -143,9 +143,9 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: power(W, t) expects 2 arguments.\n";
              exit(1);
         }
-        double W = getNum(args, count, 0);
-        double t = getNum(args, count, 1);
-        if (t == 0) return 0.0;
+        long double W = getNum(args, count, 0);
+        long double t = getNum(args, count, 1);
+        if (t == 0) return 0.0L;
         return W / t;
     }
 
@@ -155,10 +155,10 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: centripetal_force(m, v, r) expects 3 arguments.\n";
              exit(1);
         }
-        double m = getNum(args, count, 0);
-        double v = getNum(args, count, 1);
-        double r = getNum(args, count, 2);
-        if (r == 0) return 0.0;
+        long double m = getNum(args, count, 0);
+        long double v = getNum(args, count, 1);
+        long double r = getNum(args, count, 2);
+        if (r == 0) return 0.0L;
         return (m * v * v) / r;
     }
 
@@ -167,9 +167,9 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: angular_speed(T) expects 1 argument.\n";
              exit(1);
         }
-        double T = getNum(args, count, 0);
-        if (T == 0) return 0.0;
-        return (2.0 * 3.1415926535) / T;
+        long double T = getNum(args, count, 0);
+        if (T == 0) return 0.0L;
+        return (2.0L * 3.14159265358979323846L) / T;
     }
 
     // 5. Electricity
@@ -186,9 +186,9 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: current(V, R) expects 2 arguments.\n";
              exit(1);
         }
-        double V = getNum(args, count, 0);
-        double R = getNum(args, count, 1);
-        if (R == 0) return 0.0;
+        long double V = getNum(args, count, 0);
+        long double R = getNum(args, count, 1);
+        if (R == 0) return 0.0L;
         return V / R;
     }
 
@@ -222,9 +222,9 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: frequency(T) expects 1 argument.\n"; 
              exit(1);
         }
-        double T = getNum(args, count, 0);
-        if (T == 0) return 0.0;
-        return 1.0 / T;
+        long double T = getNum(args, count, 0);
+        if (T == 0) return 0.0L;
+        return 1.0L / T;
     }
 
     // 7. Heat & Thermodynamics
@@ -241,7 +241,7 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: to_kelvin(c) expects 1 argument.\n"; 
              exit(1);
         }
-        return getNum(args, count, 0) + 273.15;
+        return getNum(args, count, 0) + 273.15L;
     }
 
     if (name == "to_fahrenheit") {
@@ -249,7 +249,7 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: to_fahrenheit(c) expects 1 argument.\n"; 
              exit(1);
         }
-        return (getNum(args, count, 0) * 1.8) + 32.0;
+        return (getNum(args, count, 0) * 1.8L) + 32.0L;
     }
 
     if (name == "mass_energy") {
@@ -257,8 +257,8 @@ Value execPhysics(const std::string& name, const Value* args, size_t count) {
              std::cerr << "Error: mass_energy(m) expects 1 argument.\n"; 
              exit(1);
         }
-        double m = getNum(args, count, 0);
-        double c = 299792458.0; 
+        long double m = getNum(args, count, 0);
+        long double c = 299792458.0L; 
         return m * c * c;
     }
 

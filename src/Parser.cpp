@@ -189,12 +189,12 @@ std::shared_ptr<Expr> Parser::primary() {
     }
 
     if (check(TOKEN_INT)) {
-        int val = std::stoi(advance().lexeme);
+        long long val = std::stoll(advance().lexeme);
         return std::make_shared<LiteralExpr>(val);
     }
 
     if (check(TOKEN_DOUBLE)) {
-        double val = std::stod(advance().lexeme);
+        long double val = std::stold(advance().lexeme);
         return std::make_shared<LiteralExpr>(val);
     }
 
@@ -220,7 +220,7 @@ std::shared_ptr<Expr> Parser::primary() {
             consume(TOKEN_RBRACKET, "Expect ']' after array index.");
             return std::make_shared<ArrayAccessExpr>(name, index);
         }
-        
+
         // Check for Function Call: identifier followed by '('
         if (check(TOKEN_LPAREN)) {
             advance(); // Eat '('
@@ -271,7 +271,6 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
 }
 
 // Decides what kind of statement we are looking at
-
 std::shared_ptr<Stmt> Parser::statement() {
 
     //0. FUNCTION Declaration & Return Stmt
@@ -284,9 +283,7 @@ std::shared_ptr<Stmt> Parser::statement() {
     }
 
     // 1. IF Statement
-
     if (check(KW_IF)) {
-
         return ifStatement();
 
     }
@@ -306,13 +303,11 @@ std::shared_ptr<Stmt> Parser::statement() {
     }
 
     // 2. BLOCK Statement { ... }
-
     if (check(TOKEN_LBRACE)) {
 
         advance(); // Consume '{'
 
         return std::make_shared<BlockStmt>(block());
-
     }
     // 3. INPUT (drim)
     if (check(KW_DRIM)) {

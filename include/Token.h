@@ -27,6 +27,7 @@ enum TokenType {
     TOKEN_GREATER_EQUAL, // >=
     TOKEN_EQUAL_EQUAL,   // ==
     TOKEN_BANG_EQUAL,    // != (Not Equal)
+    TOKEN_BANG,          // ! (Logical NOT)
     
     // Math Operators
     TOKEN_PLUS,     // +

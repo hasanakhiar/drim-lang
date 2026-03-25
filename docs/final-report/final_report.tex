@@ -107,11 +107,6 @@ In Drim, variables are created automatically when they are first used or assigne
 \section{Implemented Features}
 The project includes a complete system for reading, parsing, and running code. The flow of the language follows a standard interpreter pipeline, including a Lexer (Tokenizer), a Parser that builds an Abstract Syntax Tree (AST), and an Interpreter to execute the logic.
 
-\begin{figure}[!h]
-    \centering
-    \includegraphics[width=1\linewidth]{images/sysArc.png}
-    \caption{System Architecture Flow: From Source Code to Execution}
-\end{figure}
 
 The following features were implemented:
 \begin{itemize}
@@ -129,12 +124,21 @@ The following features were implemented:
     \item \textbf{Custom Syntax:} Uses unique keywords like \texttt{drimming} for loops and \texttt{wakeOut} for output to match the project's theme.
     \item \textbf{String Interpolation:} Allows variables to be put directly inside strings (like \texttt{"Value: \{x\}"}) for easier printing.
     \item \textbf{Error Reporting:} Provides clear error messages with exact locations when something goes wrong in the code.
+    \item \textbf{Commenting System:} Supports single-line comments using \texttt{//}.
     \item \textbf{Headless Execution:} Runs as a lightweight tool in the terminal without needing a complex interface.
     \item \textbf{Multi-Assignment:} Allows assigning values to multiple variables at once using commas.
+    \item \textbf{Arrays:} Supports array data structures for storing lists of homogeneous values and performing operations on them. 
     \item \textbf{Type Checking:} Built-in support for identifying variable types at runtime using the \texttt{type()} keyword.
     \item \textbf{Scoped Variables:} Ensures variables stay within the block where they were created.
     \item \textbf{User-Defined Functions:} Users can create their own functions that run during the program.
+    \item \textbf{Recursion Support:} The language can handle functions that call themselves, allowing for more complex programming patterns.
 \end{itemize}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=1\linewidth]{images/FlowChartHierarchical.png}
+    \caption{System Architecture Flow: From Source Code to Execution}
+\end{figure}
 
 \newpage
 
@@ -143,7 +147,7 @@ The following class diagram represents the structure and relationships between t
 
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=1\linewidth]{images/classDiagram.png}
+    \includegraphics[width=0.9\linewidth]{images/FinalClassDiagramAdaptive.png}
     \caption{Project Class Diagram}
 \end{figure}
 
@@ -192,7 +196,7 @@ The work was divided among the team members as follows:
 \begin{itemize}
     \item \textbf{Md. Muntahi Hasan Akhiar:}
     \begin{itemize}
-        \item Created basic input and output systems and basic architecure of lexer, parser, and interpreter.
+        \item Created basic input and output systems and basic architecure of lexer, parser, and interpreter with Error Reporting.
         \item Implemented variable management and automatic type casting.
         \item Developed conditional logic and loops (\texttt{drimming}).
         \item Added support for arrays and multi-assignment syntax.
@@ -205,13 +209,13 @@ The work was divided among the team members as follows:
         \item Added the Boolean data type.
         \item Developed scoped variable logic.
         \item Created the system for user-defined runtime functions.
+        \item Implemented String Interpolation.
     \end{itemize}
     \item \textbf{Tamim Mahrush Naser:}
     \begin{itemize}
         \item Added unit conversion functions.
-        \item Developed a Data Structures library (Stacks, Queues, etc.).
-        \item Developed string interpolation and formatted output.
         \item Worked on increasing internal calculation precision (int64).
+        \item Developed a Data Structures library (Stacks, Queues, etc.).
     \end{itemize}
 \end{itemize}
 
