@@ -13,6 +13,7 @@ set(SOURCES
         src/Interpreter.cpp
         src/Main.cpp
         src/Physics.cpp
+        src/DS.cpp
 )
 
 add_executable(drim ${SOURCES})

@@ -49,8 +49,8 @@ void Lexer::scanToken() {
         break;
 
     case '!':
-        // Checks for !=, otherwise it's Error (or standalone ! if you support NOT)
-        addToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_ERROR);
+        // Checks for !=, otherwise it's ! (NOT)
+        addToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         break;
 
     case '<':
