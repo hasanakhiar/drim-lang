@@ -14,6 +14,11 @@ enum TokenType {
     KW_CONVERT, // Conversion Function
     KW_IF, KW_ELSE,   //
     KW_AND, KW_OR,    // (Logic)
+    KW_DRIMMING,       // While loop
+    KW_STOPDRIM,       // Break
+    KW_DRIMAGAIN,      // Continue
+
+    KW_FUNC, KW_RETURN, // For Runtime User Defined Functions
 
     // Comparison Operators
     TOKEN_LESS,          // <
@@ -29,6 +34,7 @@ enum TokenType {
     TOKEN_STAR,     // *
     TOKEN_SLASH,    // /
     TOKEN_POW,      // ^
+    TOKEN_MOD,      // %
 
     // Bitwise Operators
     TOKEN_BIT_AND,    // &
@@ -47,6 +53,8 @@ enum TokenType {
     // Syntax
     TOKEN_LPAREN,     // (
     TOKEN_RPAREN,     // )
+    TOKEN_LBRACKET,   // [
+    TOKEN_RBRACKET,   // ]
     TOKEN_ASSIGN,     // =
     TOKEN_COMMA,      // ,
     TOKEN_LBRACE,     // {
@@ -58,7 +66,7 @@ enum TokenType {
 
 struct Token {
     TokenType type;
-    std::string lexeme;
+    std::string lexeme; // the actual value of Token "("
     int line;
 };
 

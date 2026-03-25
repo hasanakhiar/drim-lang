@@ -15,6 +15,12 @@ Token Parser::peekNext() {
     return tokens[current + 1];
 }
 
+Token Parser::peekAt(int offset) {
+    int index = current + offset;
+    if (index < 0 || index >= tokens.size()) return tokens.back();
+    return tokens[index];
+}
+
 Token Parser::advance() {
     if (current < tokens.size()) current++;
     return tokens[current - 1];
@@ -136,7 +142,7 @@ std::shared_ptr<Expr> Parser::additive() {
 std::shared_ptr<Expr> Parser::term() {
     std::shared_ptr<Expr> expr = power();
 
-    while (check(TOKEN_STAR) || check(TOKEN_SLASH)) {
+    while (check(TOKEN_STAR) || check(TOKEN_SLASH) || check(TOKEN_MOD)) {
         Token op = advance();
         std::shared_ptr<Expr> right = power();
         expr = std::make_shared<BinaryExpr>(expr, op, right);
@@ -170,6 +176,18 @@ std::shared_ptr<Expr> Parser::unary() {
 
 // === PRIMARY PARSING (Highest Priority: literals, vars, parens) ===
 std::shared_ptr<Expr> Parser::primary() {
+    if (check(TOKEN_LBRACKET)) {
+        advance(); // consume '['
+        std::vector<std::shared_ptr<Expr>> elements;
+        if (!check(TOKEN_RBRACKET)) {
+            do {
+                elements.push_back(expression());
+            } while (check(TOKEN_COMMA) && advance().type == TOKEN_COMMA);
+        }
+        consume(TOKEN_RBRACKET, "Expect ']' after array literal.");
+        return std::make_shared<ArrayLiteralExpr>(elements);
+    }
+
     if (check(TOKEN_INT)) {
         long long val = std::stoll(advance().lexeme);
         return std::make_shared<LiteralExpr>(val);
@@ -195,7 +213,14 @@ std::shared_ptr<Expr> Parser::primary() {
 
     if (check(TOKEN_IDENTIFIER)) {
         Token name = advance();
-        
+
+        if (check(TOKEN_LBRACKET)) {
+            advance(); // eat '['
+            std::shared_ptr<Expr> index = expression();
+            consume(TOKEN_RBRACKET, "Expect ']' after array index.");
+            return std::make_shared<ArrayAccessExpr>(name, index);
+        }
+
         // Check for Function Call: identifier followed by '('
         if (check(TOKEN_LPAREN)) {
             advance(); // Eat '('
@@ -247,20 +272,55 @@ std::vector<std::shared_ptr<Stmt>> Parser::parse() {
 
 // Decides what kind of statement we are looking at
 std::shared_ptr<Stmt> Parser::statement() {
+
+    //0. FUNCTION Declaration & Return Stmt
+    if (check(KW_FUNC)) {
+        return functionDeclaration();
+    }
+
+    if (check(KW_RETURN)) {
+        return returnStatement();
+    }
+
     // 1. IF Statement
     if (check(KW_IF)) {
         return ifStatement();
+
     }
+    // 1b. WHILE Statement (drimming)
+    if (check(KW_DRIMMING)) {
+        return whileStatement();
+    }
+    // 1c. BREAK (stopdrim)
+    if (check(KW_STOPDRIM)) {
+        advance();
+        return std::make_shared<BreakStmt>();
+    }
+    // 1d. CONTINUE (drimagain)
+    if (check(KW_DRIMAGAIN)) {
+        advance();
+        return std::make_shared<ContinueStmt>();
+    }
+
     // 2. BLOCK Statement { ... }
     if (check(TOKEN_LBRACE)) {
+
+        advance(); // Consume '{'
+
         return std::make_shared<BlockStmt>(block());
     }
     // 3. INPUT (drim)
     if (check(KW_DRIM)) {
         advance(); consume(TOKEN_LPAREN, "Expect '('");
-        Token name = consume(TOKEN_IDENTIFIER, "Expect var name");
+        std::shared_ptr<Expr> target = expression();
+        bool validTarget = std::dynamic_pointer_cast<VariableExpr>(target) != nullptr ||
+                           std::dynamic_pointer_cast<ArrayAccessExpr>(target) != nullptr;
+        if (!validTarget) {
+            std::cerr << "Error: drim target must be a variable or array element on line " << peek().line << "\n";
+            exit(1);
+        }
         consume(TOKEN_RPAREN, "Expect ')'");
-        return std::make_shared<InputStmt>(name);
+        return std::make_shared<InputStmt>(target);
     }
     // 4. PRINT (wake)
     if (check(KW_WAKE)) {
@@ -276,16 +336,54 @@ std::shared_ptr<Stmt> Parser::statement() {
          consume(TOKEN_RPAREN, "Expect ')'");
          return std::make_shared<TypeStmt>(val);
     }
+    // 6. ARRAY DECLARATION (name[])
+    if (check(TOKEN_IDENTIFIER) && peekAt(1).type == TOKEN_LBRACKET && peekAt(2).type == TOKEN_RBRACKET) {
+        Token name = advance();
+        advance(); // consume '['
+        advance(); // consume ']'
+        return std::make_shared<ArrayDeclStmt>(name);
+    }
     // 6. ASSIGNMENT (var = val)
     if (check(TOKEN_IDENTIFIER) && peekNext().type == TOKEN_ASSIGN) {
         Token name = advance();
         advance(); // Eat '='
         std::shared_ptr<Expr> value = expression();
-        return std::make_shared<AssignStmt>(name, value);
+
+        if (auto arrayLiteral = std::dynamic_pointer_cast<ArrayLiteralExpr>(value)) {
+            return std::make_shared<ArrayAssignStmt>(name, arrayLiteral);
+        }
+
+        std::vector<std::shared_ptr<Stmt>> stmts;
+        stmts.push_back(std::make_shared<AssignStmt>(name, value));
+
+        // Check for more: , j = 0
+        while (check(TOKEN_COMMA)) {
+            advance(); // Eat ','
+            Token nextName = consume(TOKEN_IDENTIFIER, "Expect variable name after ','");
+            consume(TOKEN_ASSIGN, "Expect '=' after variable name");
+            std::shared_ptr<Expr> nextValue = expression();
+            stmts.push_back(std::make_shared<AssignStmt>(nextName, nextValue));
+        }
+
+        if (stmts.size() == 1) return stmts[0];
+        return std::make_shared<SequenceStmt>(stmts);
     }
 
-    // 7. EXPRESSION STATEMENT (fallback for function calls etc.)
-    return std::make_shared<ExpressionStmt>(expression()); 
+    // 7. ARRAY ELEMENT ASSIGNMENT (name[index] = value)
+    if (check(TOKEN_IDENTIFIER) && peekAt(1).type == TOKEN_LBRACKET) {
+        Token name = advance();
+        advance(); // consume '['
+        std::shared_ptr<Expr> index = expression();
+        consume(TOKEN_RBRACKET, "Expect ']' after array index.");
+        consume(TOKEN_ASSIGN, "Expect '=' after array index.");
+        std::shared_ptr<Expr> value = expression();
+        return std::make_shared<ArrayElementAssignStmt>(name, index, value);
+    }
+
+    // REPLACED SKIP FALLBACK
+    std::shared_ptr<Expr> expr = expression();
+    return std::make_shared<ExprStmt>(expr);
+
 }
 
 std::shared_ptr<Stmt> Parser::ifStatement() {
@@ -332,4 +430,57 @@ std::vector<std::shared_ptr<Stmt>> Parser::block() {
     }
     consume(TOKEN_RBRACE, "Expect '}' after block.");
     return stmts;
+}
+
+
+std::shared_ptr<Stmt> Parser::whileStatement() {
+    consume(KW_DRIMMING, "Expect 'drimming'.");
+
+    // Parse condition (e.g. "i <= 10 and j <= 30")
+    std::shared_ptr<Expr> condition = expression();
+
+    // Parse body block
+    consume(TOKEN_LBRACE, "Expect '{' after drimming condition.");
+    std::vector<std::shared_ptr<Stmt>> bodyStmts = block();
+    std::shared_ptr<Stmt> body = std::make_shared<BlockStmt>(bodyStmts);
+
+    return std::make_shared<WhileStmt>(condition, body);
+}
+std::shared_ptr<Stmt> Parser::functionDeclaration() {
+    advance(); // consume "func"
+    Token name = consume(TOKEN_IDENTIFIER, "Expect function name.");
+
+    consume(TOKEN_LPAREN, "Expect '(' after function name.");
+    std::vector<Token> params;
+    if (!check(TOKEN_RPAREN)) {
+        do {
+            params.push_back(consume(TOKEN_IDENTIFIER, "Expect parameter name."));
+        }
+        while (check(TOKEN_COMMA) && advance().type == TOKEN_COMMA);
+    }
+    consume(TOKEN_RPAREN, "Expect ')' after parameters.");
+    consume(TOKEN_LBRACE, "Expect '{' before function body.");
+
+    std::vector<std::shared_ptr<Stmt>> body = block(); // take next whole {...}
+    return std::make_shared<FunctionStmt>(name, params, body);
+}
+
+std::shared_ptr<Stmt> Parser::returnStatement() {
+    Token keyword = advance(); // consume "return"
+    std::shared_ptr<Expr> value = nullptr;
+
+    // try to find value after return, for non-void function
+    // if void func, just skip the "value", just consume return
+
+    //if (!check(TOKEN_RBRACE) && !isAtEnd()) {
+
+    //only parse expr if the next token can actually be a expr
+    if (check(TOKEN_INT) || check(TOKEN_DOUBLE) || check(TOKEN_STRING) ||
+        check(TOKEN_TRUE) || check(TOKEN_FALSE) || check(TOKEN_IDENTIFIER) ||
+        check(KW_CONVERT) || check(TOKEN_LPAREN) || check(TOKEN_BIT_NOT)){
+        value = expression();
+    }
+
+    return std::make_shared<ReturnStmt>(keyword, value);
+
 }
