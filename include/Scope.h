@@ -22,10 +22,10 @@ class Scope {
     std::map<std::string, std::shared_ptr<FunctionStmt>> functions;
 
     std::string inferValueTypeName(const Value& value) {
-        if (std::holds_alternative<int>(value)) return "int";
-        if (std::holds_alternative<double>(value)) return "float";
-        if (std::holds_alternative<std::string>(value)) return "string";
-        if (std::holds_alternative<bool>(value)) return "bool";
+        if (std::holds_alternative<long long>(value.data)) return "int";
+        if (std::holds_alternative<long double>(value.data)) return "float";
+        if (std::holds_alternative<std::string>(value.data)) return "string";
+        if (std::holds_alternative<bool>(value.data)) return "bool";
         return "unknown";
     }
 
@@ -169,7 +169,7 @@ public:
 
         std::vector<Value>& arr = owner->arrays[name.lexeme];
         if (index >= static_cast<int>(arr.size())) {
-            arr.resize(index + 1, 0);
+            arr.resize(index + 1, 0LL);
         }
         arr[index] = value;
     }

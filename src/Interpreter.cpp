@@ -1,5 +1,6 @@
 #include "../include/Interpreter.h"
 #include "../include/Physics.h"
+#include "../include/DS.h"
 #include "../include/Signal.h"
 #include <iostream>
 #include <string>
@@ -7,51 +8,55 @@
 #include <variant>
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846L
 #endif
 
 bool isTruthy(const Value& v) {
-    if (std::holds_alternative<bool>(v)) return std::get<bool>(v);
-    if (std::holds_alternative<int>(v)) return std::get<int>(v) != 0; // So lines like if (5) {...} is still possible
-    if (std::holds_alternative<double>(v)) return std::get<double>(v) != 0.0;
-    if (std::holds_alternative<std::string>(v)) return !std::get<std::string>(v).empty();
-    return false; // Should not happen for these types
+    if (auto b = std::get_if<bool>(&v.data)) return *b;
+    if (auto i = std::get_if<long long>(&v.data)) return *i != 0;
+    if (auto d = std::get_if<long double>(&v.data)) return *d != 0.0L;
+    if (auto s = std::get_if<std::string>(&v.data)) return !s->empty();
+    return false;
 }
-// Parse string inputs into int or double if possible
+
+// Stricter version of parseInput as discussed
 Value parseInput(std::string text) {
     if (text.empty()) return text;
 
+    size_t i = 0;
+    // Check for a leading negative sign, but ensure there's a character after it
+    if (text[0] == '-' && text.size() > 1) i = 1;
+
     bool isNumber = true;
     bool hasDot = false;
+    bool hasDigit = false;
 
-    for (char c : text) {
-        if (!isdigit(c)) {
-            if (c == '.' && !hasDot) {
-                hasDot = true;
-            } else {
-                isNumber = false;
-                break;
-            }
+    for (; i < text.size(); ++i) {
+        if (isdigit(text[i])) {
+            hasDigit = true;
+        } else if (text[i] == '.' && !hasDot) {
+            hasDot = true;
+        } else {
+            isNumber = false;
+            break;
         }
     }
 
-    if (isNumber) {
+    if (isNumber && hasDigit) {
         try {
-            if (hasDot) return std::stod(text);
-            return std::stoi(text);
+            if (hasDot) return std::stold(text); // 64-bit float
+            return std::stoll(text);            // 64-bit integer
         } catch (...) {
-            // fallback to string if conversion fails
             return text;
         }
     }
     return text;
 }
 
-// Helper to extract double from Value
-double getDouble(const Value& v) {
-    if (std::holds_alternative<int>(v)) return (double)std::get<int>(v);
-    if (std::holds_alternative<double>(v)) return std::get<double>(v);
-    return 0.0;
+long double getLongDouble(const Value& v) {
+    if (auto i = std::get_if<long long>(&v.data)) return (long double)*i;
+    if (auto d = std::get_if<long double>(&v.data)) return *d;
+    return 0.0L;
 }
 
 Interpreter::Interpreter() {
@@ -62,11 +67,8 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
     if (auto access = std::dynamic_pointer_cast<ArrayAccessExpr>(expr)) {
         Value indexVal = evaluate(access->index);
-        if (!std::holds_alternative<int>(indexVal)) {
-            std::cerr << "Runtime Error: Array index must be int for '" << access->name.lexeme << "'\n";
-            exit(1);
-        }
-        int index = std::get<int>(indexVal);
+        long double idxRaw = getLongDouble(indexVal);
+        int index = (int)idxRaw;
         return scope->getArrayElement(access->name, index);
     }
 
@@ -85,8 +87,6 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
              exit(1);
         }
 
-
-        // evaluate all the arguments first
         std::vector<Value> argsValues;
         for (auto arg : call->arguments) {
             argsValues.push_back(evaluate(arg));
@@ -94,37 +94,25 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
 
         std::shared_ptr<FunctionStmt> func = scope->getFunc(funcName);
 
-        // check if its a user-defined func
         if (func) {
-            //auto func = userFunctions[funcName];
-
-            // validate arg count
             if (argsValues.size() != func->params.size()) {
                 std::cerr << "Runtime Error: Expected " << func->params.size() << " arguments but got " << argsValues.size() << ".\n";
                 exit(1);
             }
 
-            // create a new LOCAL SCOPE for the func exec
-            // where parent = current scope (hopefully parent)
-
             auto functionScope = std::make_shared<Scope>(scope);
-
-            // bind passed args to the func's local scope
             for (size_t i = 0; i < argsValues.size(); i++) {
                 functionScope->define(func->params[i].lexeme, argsValues[i]);
             }
 
-            // switch to the function's scope to run the body
-            // cus we are on the parent's body rn
-
             auto previousScope = scope;
             this->scope = functionScope;
 
-            Value result = 0;
+            Value result = 0LL;
             try {
                 interpret(func->body);
             } catch (ReturnValue& rv) {
-                result = rv.value; // Catch the return Value
+                result = rv.value;
             }
             this->scope = previousScope;
             return result;
@@ -139,221 +127,177 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             }
             args[count++] = arg;
         }
+
+        if (funcName.find("stack_") == 0 || funcName.find("queue_") == 0) {
+            return execDS(funcName, args, count);
+        }
+
         return execPhysics(funcName, args, count);
     }
 
-    // Literals
     if (auto lit = std::dynamic_pointer_cast<LiteralExpr>(expr)) {
         return lit->value;
     }
 
-    // VARIABLES
     if (auto var = std::dynamic_pointer_cast<VariableExpr>(expr)) {
         return scope->get(var->name);
     }
 
-    // UNARY OPERATIONS (Bitwise NOT)
+    // UNARY OPERATIONS
     if (auto una = std::dynamic_pointer_cast<UnaryExpr>(expr)) {
         Value rightVal = evaluate(una->right);
 
-        if (std::holds_alternative<int>(rightVal)) {
-            int r = std::get<int>(rightVal);
-            if (una->op.type == TOKEN_BIT_NOT) return ~r;
+        if (una->op.type == TOKEN_BIT_NOT) {
+             if (auto r = std::get_if<long long>(&rightVal.data)) return Value((long long)(~(*r)));
         }
+        if (una->op.type == TOKEN_MINUS) {
+            if (auto r = std::get_if<long long>(&rightVal.data)) return Value((long long)(-(*r)));
+            if (auto r = std::get_if<long double>(&rightVal.data)) return Value((long double)(-(*r)));
+        }
+        if (una->op.type == TOKEN_BANG) {
+            return Value((bool)!isTruthy(rightVal));
+        }
+
         std::cerr << "Runtime Error: Invalid unary operation\n";
         exit(1);
     }
 
-    // CONVERSIONS (conv_dist)
+    // CONVERSIONS
     if (auto conv = std::dynamic_pointer_cast<ConvertExpr>(expr)) {
         Value val = evaluate(conv->value);
         Value modeVal = evaluate(conv->mode);
 
-        if (!std::holds_alternative<std::string>(modeVal)) {
+        auto modePtr = std::get_if<std::string>(&modeVal.data);
+        if (!modePtr) {
             std::cerr << "Runtime Error: Conversion mode must be a string\n";
             exit(1);
         }
 
-        std::string mode = std::get<std::string>(modeVal);
-        double num = 0.0;
+        std::string mode = *modePtr;
+        long double num = getLongDouble(val);
 
-        // Get the number as double
-        if (std::holds_alternative<int>(val)) num = (double)std::get<int>(val);
-        else if (std::holds_alternative<double>(val)) num = std::get<double>(val);
-        else {
-             std::cerr << "Runtime Error: Cannot convert non-number\n";
-             exit(1);
-        }
-
-        // --- CONVERSION LOGIC ---
-        // Length
-        if (mode == "in_cm") return num * 2.54;
-        if (mode == "cm_in") return num / 2.54;
-
-        // Power
-        if (mode == "hp_kw") return num * 0.7457;
-        if (mode == "kw_hp") return num / 0.7457;
-
-        // Temperature
-        if (mode == "f_c") return (num - 32.0) * 5.0 / 9.0;
-        if (mode == "c_f") return (num * 9.0 / 5.0) + 32.0;
-
-        // Pressure
-        if (mode == "psi_bar") return num * 0.0689476;
-        if (mode == "bar_psi") return num / 0.0689476;
-
-        // Digital Storage
-        if (mode == "mb_gb") return num / 1024.0;
-        if (mode == "gb_mb") return num * 1024.0;
-
-        // Energy
-        if (mode == "j_cal") return num / 4184.0;
-        if (mode == "cal_j") return num * 4184.0;
-
-        // Angles
-        if (mode == "deg_rad") return num * (M_PI / 180.0);
-        if (mode == "rad_deg") return num * (180.0 / M_PI);
-
-        // Mass
-        if (mode == "lb_kg") return num * 0.453592;
-        if (mode == "kg_lb") return num / 0.453592;
-
-        // Currency
-        if (mode == "usd_bdt") return num * 122;
-        if (mode == "bdt_usd") return num / 122;
-
-        if (mode == "usd_eur") return num * 0.92;
-        if (mode == "eur_usd") return num / 0.92;
-
-        // Speed
-        if (mode == "mph_kmph") return num * 1.60934;
-        if (mode == "kmph_mph") return num / 1.60934;
-
-        // Torque
-        if (mode == "nm_ftlb") return num * 0.737562;
-        if (mode == "ftlb_nm") return num / 0.737562;
-
-        // G-Force
-        if (mode == "g_ms2") return num * 9.80665;
-        if (mode == "ms2_g") return num / 9.80665;
+        if (mode == "in_cm") return Value((long double)(num * 2.54L));
+        if (mode == "cm_in") return Value((long double)(num / 2.54L));
+        if (mode == "hp_kw") return Value((long double)(num * 0.7457L));
+        if (mode == "kw_hp") return Value((long double)(num / 0.7457L));
+        if (mode == "f_c") return Value((long double)((num - 32.0L) * 5.0L / 9.0L));
+        if (mode == "c_f") return Value((long double)((num * 9.0L / 5.0L) + 32.0L));
+        if (mode == "psi_bar") return Value((long double)(num * 0.0689476L));
+        if (mode == "bar_psi") return Value((long double)(num / 0.0689476L));
+        if (mode == "mb_gb") return Value((long double)(num / 1024.0L));
+        if (mode == "gb_mb") return Value((long double)(num * 1024.0L));
+        if (mode == "j_cal") return Value((long double)(num / 4184.0L));
+        if (mode == "cal_j") return Value((long double)(num * 4184.0L));
+        if (mode == "deg_rad") return Value((long double)(num * (M_PI / 180.0L)));
+        if (mode == "rad_deg") return Value((long double)(num * (180.0L / M_PI)));
+        if (mode == "lb_kg") return Value((long double)(num * 0.453592L));
+        if (mode == "kg_lb") return Value((long double)(num / 0.453592L));
+        if (mode == "usd_bdt") return Value((long double)(num * 122.0L));
+        if (mode == "bdt_usd") return Value((long double)(num / 122.0L));
+        if (mode == "usd_eur") return Value((long double)(num * 0.92L));
+        if (mode == "eur_usd") return Value((long double)(num / 0.92L));
+        if (mode == "mph_kmph") return Value((long double)(num * 1.60934L));
+        if (mode == "kmph_mph") return Value((long double)(num / 1.60934L));
+        if (mode == "nm_ftlb") return Value((long double)(num * 0.737562L));
+        if (mode == "ftlb_nm") return Value((long double)(num / 0.737562L));
+        if (mode == "g_ms2") return Value((long double)(num * 9.80665L));
+        if (mode == "ms2_g") return Value((long double)(num / 9.80665L));
 
         std::cerr << "Runtime Error: Unknown conversion mode '" << mode << "'\n";
         exit(1);
     }
 
-    // BINARY OPERATIONS (Math + Logic)
     if (auto bin = std::dynamic_pointer_cast<BinaryExpr>(expr)) {
         Value leftVal = evaluate(bin->left);
         Value rightVal = evaluate(bin->right);
 
-        // --- A. LOGIC OPERATORS (and, or) ---
-        if (bin->op.type == KW_AND) {
-            return (isTruthy(leftVal) && isTruthy(rightVal));
-        }
-        if (bin->op.type == KW_OR) {
-            return (isTruthy(leftVal) || isTruthy(rightVal));
-        }
+        if (bin->op.type == KW_AND) return Value((bool)(isTruthy(leftVal) && isTruthy(rightVal)));
+        if (bin->op.type == KW_OR) return Value((bool)(isTruthy(leftVal) || isTruthy(rightVal)));
 
-        // Numeric operations
-        bool leftIsNum = std::holds_alternative<int>(leftVal) || std::holds_alternative<double>(leftVal); 
-        bool rightIsNum = std::holds_alternative<int>(rightVal) || std::holds_alternative<double>(rightVal);
-        
-        // Convert to doubles for easy comparison
-        double l = 0.0, r = 0.0;
-        if (leftIsNum) l = std::holds_alternative<int>(leftVal) ? std::get<int>(leftVal) : std::get<double>(leftVal);
-        if (rightIsNum) r = std::holds_alternative<int>(rightVal) ? std::get<int>(rightVal) : std::get<double>(rightVal);
+        bool leftIsNum = std::holds_alternative<long long>(leftVal.data) || std::holds_alternative<long double>(leftVal.data);
+        bool rightIsNum = std::holds_alternative<long long>(rightVal.data) || std::holds_alternative<long double>(rightVal.data);
 
-        // --- B. COMPARISONS (<, >, ==, !=) ---
+        long double l = 0.0L, r = 0.0L;
+        if (leftIsNum) l = getLongDouble(leftVal);
+        if (rightIsNum) r = getLongDouble(rightVal);
+
         if (leftIsNum && rightIsNum) {
             switch (bin->op.type) {
-                case TOKEN_LESS:          return (l < r);
-                case TOKEN_GREATER:       return (l > r);
-                case TOKEN_LESS_EQUAL:    return (l <= r);
-                case TOKEN_GREATER_EQUAL: return (l >= r);
-                case TOKEN_EQUAL_EQUAL:   return (l == r);
-                case TOKEN_BANG_EQUAL:    return (l != r);
+                case TOKEN_LESS:          return Value((bool)(l < r));
+                case TOKEN_GREATER:       return Value((bool)(l > r));
+                case TOKEN_LESS_EQUAL:    return Value((bool)(l <= r));
+                case TOKEN_GREATER_EQUAL: return Value((bool)(l >= r));
+                case TOKEN_EQUAL_EQUAL:   return Value((bool)(l == r));
+                case TOKEN_BANG_EQUAL:    return Value((bool)(l != r));
             }
         }
 
-        // General equality (e.g. bool vs bool, string vs string, or type mismatch)
-        if (bin->op.type == TOKEN_EQUAL_EQUAL) {
-            return leftVal == rightVal;
-        }
-        if (bin->op.type == TOKEN_BANG_EQUAL) {
-            return leftVal != rightVal;
-        }
+        if (bin->op.type == TOKEN_EQUAL_EQUAL) return Value((bool)(leftVal == rightVal));
+        if (bin->op.type == TOKEN_BANG_EQUAL) return Value((bool)(leftVal != rightVal));
 
-        // MATH OPERATIONS (+, -, *, /) ---
         if (leftIsNum && rightIsNum) {
-            bool useDouble = std::holds_alternative<double>(leftVal) || std::holds_alternative<double>(rightVal);
-
-            double l = std::holds_alternative<int>(leftVal) ? std::get<int>(leftVal) : std::get<double>(leftVal);
-            double r = std::holds_alternative<int>(rightVal) ? std::get<int>(rightVal) : std::get<double>(rightVal);
-
+            bool useDouble = std::holds_alternative<long double>(leftVal.data) || std::holds_alternative<long double>(rightVal.data);
             if (bin->op.type == TOKEN_PLUS) {
-                if(useDouble) return l + r;
-                return (int)l + (int)r;
+                if(useDouble) return Value((long double)(l + r));
+                return Value((long long)((long long)l + (long long)r));
             }
             if (bin->op.type == TOKEN_MINUS) {
-                if(useDouble) return l - r;
-                return (int)l - (int)r;
+                if(useDouble) return Value((long double)(l - r));
+                return Value((long long)((long long)l - (long long)r));
             }
             if (bin->op.type == TOKEN_STAR) {
-                if(useDouble) return l * r;
-                return (int)l * (int)r;
+                if(useDouble) return Value((long double)(l * r));
+                return Value((long long)((long long)l * (long long)r));
             }
             if (bin->op.type == TOKEN_SLASH) {
                 if (r == 0) { std::cerr << "Runtime Error: Division by zero\n"; exit(1); }
-                if(useDouble) return l / r;
-                return (int)(l / r);
+                if(useDouble) return Value((long double)(l / r));
+                return Value((long long)((long long)l / (long long)r));
             }
-            if (bin->op.type == TOKEN_POW) {
-                return pow(l, r);
-            }
+            if (bin->op.type == TOKEN_POW) return Value((long double)powl(l, r));
             if (bin->op.type == TOKEN_MOD) {
                 if (!useDouble) {
-                    int li = (int)l;
-                    int ri = (int)r;
+                    long long li = (long long)l;
+                    long long ri = (long long)r;
                     if (ri == 0) { std::cerr << "Runtime Error: Modulo by zero\n"; exit(1); }
-                    return li % ri;
+                    return Value((long long)(li % ri));
                 }
                 if (r == 0) { std::cerr << "Runtime Error: Modulo by zero\n"; exit(1); }
-                return std::fmod(l, r);
+                return Value((long double)std::fmod(l, r));
             }
-            // Bitwise operations (integers only)
+
             if (!useDouble) {
-                int li = (int)l;
-                int ri = (int)r;
-                if (bin->op.type == TOKEN_BIT_AND) return li & ri;
-                if (bin->op.type == TOKEN_BIT_OR) return li | ri;
-                if (bin->op.type == TOKEN_LSHIFT) return li << ri;
-                if (bin->op.type == TOKEN_RSHIFT) return li >> ri;
+                long long li = (long long)l;
+                long long ri = (long long)r;
+                if (bin->op.type == TOKEN_BIT_AND) return Value((long long)(li & ri));
+                if (bin->op.type == TOKEN_BIT_OR) return Value((long long)(li | ri));
+                if (bin->op.type == TOKEN_LSHIFT) return Value((long long)(li << ri));
+                if (bin->op.type == TOKEN_RSHIFT) return Value((long long)(li >> ri));
             }
         }
 
-        // String concatenation
         if (bin->op.type == TOKEN_PLUS) {
             auto toStr = [](const Value& v) -> std::string {
-                if (std::holds_alternative<int>(v)) return std::to_string(std::get<int>(v));
-                if (std::holds_alternative<double>(v)) return std::to_string(std::get<double>(v));
-                if (std::holds_alternative<bool>(v)) return std::get<bool>(v) ? "true" : "false";        
-                return std::get<std::string>(v);
+                if (auto i = std::get_if<long long>(&v.data)) return std::to_string(*i);
+                if (auto d = std::get_if<long double>(&v.data)) return std::to_string(*d);
+                if (auto b = std::get_if<bool>(&v.data)) return *b ? "true" : "false";
+                if (auto s = std::get_if<std::string>(&v.data)) return *s;
+                return "<collection>";
             };
-            return toStr(leftVal) + toStr(rightVal);
+            return Value(toStr(leftVal) + toStr(rightVal));
         }
 
         std::cerr << "Runtime Error: Invalid operation\n";
         exit(1);
     }
 
-    return 0; 
+    return 0LL;
 }
 
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
-    for (auto cmd : commands) { // cmd = every line of code
+    for (auto cmd : commands) {
         if (!cmd) continue;
 
-        // WHILE STATEMENT (drimming)
         if (auto whileStmt = std::dynamic_pointer_cast<WhileStmt>(cmd)) {
             try {
                 while (true) {
@@ -363,99 +307,64 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
                         std::vector<std::shared_ptr<Stmt>> wrapper = { whileStmt->body };
                         interpret(wrapper);
                     } catch (ContinueSignal&) {
-                        // Skip rest of body, re-evaluate condition
                         continue;
                     }
                 }
             } catch (BreakSignal&) {
-                // Exit the loop entirely
             }
-            continue; // Move to next statement after the loop
-        }
-
-        // BREAK (stopdrim)
-        if (auto brk = std::dynamic_pointer_cast<BreakStmt>(cmd)) {
-            throw BreakSignal();
-        }
-
-        // CONTINUE (drimagain)
-        if (auto cont = std::dynamic_pointer_cast<ContinueStmt>(cmd)) {
-            throw ContinueSignal();
-        }
-        
-
-        // Save Function Definition
-        if (auto funcStmt = std::dynamic_pointer_cast<FunctionStmt>(cmd)) {
-            scope->defineFunc(funcStmt->name.lexeme, funcStmt); // map -> (name, ptrToFunc)
             continue;
         }
 
-        // Handle Return
-        if (auto returnStmt = std::dynamic_pointer_cast<ReturnStmt>(cmd)) {
-            Value val = 0; // Default return 0
-            if (returnStmt->value) {
-                val = evaluate(returnStmt->value);
-            }
-            throw ReturnValue(val); // Jump out of the scope/ func body
+        if (auto brk = std::dynamic_pointer_cast<BreakStmt>(cmd)) throw BreakSignal();
+        if (auto cont = std::dynamic_pointer_cast<ContinueStmt>(cmd)) throw ContinueSignal();
+
+        if (auto funcStmt = std::dynamic_pointer_cast<FunctionStmt>(cmd)) {
+            scope->defineFunc(funcStmt->name.lexeme, funcStmt);
+            continue;
         }
 
-        // IF STATEMENT
+        if (auto returnStmt = std::dynamic_pointer_cast<ReturnStmt>(cmd)) {
+            Value val = 0LL;
+            if (returnStmt->value) val = evaluate(returnStmt->value);
+            throw ReturnValue(val);
+        }
+
         if (auto ifStmt = std::dynamic_pointer_cast<IfStmt>(cmd)) {
             Value cond = evaluate(ifStmt->condition);
             if (isTruthy(cond)) {
-                // Execute 'Then' (It's usually a BlockStmt)
-                std::vector<std::shared_ptr<Stmt>> wrapper = { ifStmt->thenBranch };
-                interpret(wrapper); // Recursive call
+                interpret({ ifStmt->thenBranch });
             } else if (ifStmt->elseBranch != nullptr) {
-                // Execute 'Else'
-                std::vector<std::shared_ptr<Stmt>> wrapper = { ifStmt->elseBranch };
-                interpret(wrapper);
+                interpret({ ifStmt->elseBranch });
             }
         }
-        // SEQUENCE STATEMENT (comma-separated assignments)
         else if (auto seq = std::dynamic_pointer_cast<SequenceStmt>(cmd)) {
             interpret(seq->statements);
         }
-        // BLOCK STATEMENT { ... }
         else if (auto block = std::dynamic_pointer_cast<BlockStmt>(cmd)) {
             std::shared_ptr<Scope> previous = scope;
             scope = std::make_shared<Scope>(previous);
-            
             interpret(block->statements);
-            
             scope = previous;
         }
-        // Input
         else if (auto input = std::dynamic_pointer_cast<InputStmt>(cmd)) {
             std::string userText;
             if (std::getline(std::cin, userText)) {
                 Value parsed = parseInput(userText);
-
                 if (auto var = std::dynamic_pointer_cast<VariableExpr>(input->target)) {
                     scope->assign(var->name, parsed);
                 } else if (auto arr = std::dynamic_pointer_cast<ArrayAccessExpr>(input->target)) {
                     Value indexVal = evaluate(arr->index);
-                    if (!std::holds_alternative<int>(indexVal)) {
-                        std::cerr << "Runtime Error: Array index must be int for '" << arr->name.lexeme << "'\n";
-                        exit(1);
-                    }
-                    scope->assignArrayElement(arr->name, std::get<int>(indexVal), parsed);
-                } else {
-                    std::cerr << "Runtime Error: Invalid drim target\n";
-                    exit(1);
+                    int index = (int)getLongDouble(indexVal);
+                    scope->assignArrayElement(arr->name, index, parsed);
                 }
             }
         }
-        // Assignment
         else if (auto assign = std::dynamic_pointer_cast<AssignStmt>(cmd)) {
-            Value val = evaluate(assign->value);
-            scope->assign(assign->name, val);
+            scope->assign(assign->name, evaluate(assign->value));
         }
-        // Array declaration
         else if (auto arrDecl = std::dynamic_pointer_cast<ArrayDeclStmt>(cmd)) {
             scope->declareArray(arrDecl->name);
         }
-        // Whole-array assignment (x = [1,2,3])
         else if (auto arrAssign = std::dynamic_pointer_cast<ArrayAssignStmt>(cmd)) {
             std::vector<Value> elements;
             for (auto elementExpr : arrAssign->value->elements) {
@@ -463,32 +372,22 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
             }
             scope->assignArray(arrAssign->name, elements);
         }
-        // Element assignment (x[i] = value)
         else if (auto arrElemAssign = std::dynamic_pointer_cast<ArrayElementAssignStmt>(cmd)) {
-            Value indexVal = evaluate(arrElemAssign->index);
-            if (!std::holds_alternative<int>(indexVal)) {
-                std::cerr << "Runtime Error: Array index must be int for '" << arrElemAssign->name.lexeme << "'\n";
-                exit(1);
-            }
-            Value elementValue = evaluate(arrElemAssign->value);
-            scope->assignArrayElement(arrElemAssign->name, std::get<int>(indexVal), elementValue);
+            int index = (int)getLongDouble(evaluate(arrElemAssign->index));
+            scope->assignArrayElement(arrElemAssign->name, index, evaluate(arrElemAssign->value));
         }
-        // PRINT (wake)
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
-            Value output = evaluate(print->expression);
-            printValue(output);
+            printValue(evaluate(print->expression));
             std::cout << "\n";
         }
-        //TYPE CHECK
         else if (auto typeStmt = std::dynamic_pointer_cast<TypeStmt>(cmd)) {
             Value valToCheck = evaluate(typeStmt->expression);
-
-            if (std::holds_alternative<int>(valToCheck)) std::cout << "<type 'int'>\n";
-            else if (std::holds_alternative<double>(valToCheck)) std::cout << "<type 'float'>\n";
-            else if (std::holds_alternative<std::string>(valToCheck)) std::cout << "<type 'string'>\n";   
-            else if (std::holds_alternative<bool>(valToCheck)) std::cout << "<type 'bool'>\n";
+            if (std::holds_alternative<long long>(valToCheck.data)) std::cout << "<type 'int'>\n";
+            else if (std::holds_alternative<long double>(valToCheck.data)) std::cout << "<type 'float'>\n";
+            else if (std::holds_alternative<std::string>(valToCheck.data)) std::cout << "<type 'string'>\n";
+            else if (std::holds_alternative<bool>(valToCheck.data)) std::cout << "<type 'bool'>\n";
+            else std::cout << "<type 'collection'>\n";
         }
-        // if Stmt is just a EXPR
         else if (auto exprStmt = std::dynamic_pointer_cast<ExprStmt>(cmd)) {
             evaluate(exprStmt->expression);
         }
