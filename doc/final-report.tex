@@ -134,24 +134,29 @@ The following features were implemented:
     \item \textbf{Recursion Support:} The language can handle functions that call themselves, allowing for more complex programming patterns.
 \end{itemize}
 
+\vspace{1cm}
+
+\section{System Architecture Flow}
 \begin{figure}[!h]
     \centering
     \includegraphics[width=1\linewidth]{images/FlowChartHierarchical.png}
     \caption{System Architecture Flow: From Source Code to Execution}
 \end{figure}
 
+Drim's architecture is based on a classic Tree-Walk Interpreter design. The process kicks off with the source code (\texttt{.drim} file) being read as raw text and passed to the \textbf{Lexer}. The lexer scans through the characters to group them into \textbf{Tokens} like keywords, identifiers, and operators. These tokens then move on to the \textbf{Parser}, which follows the language's grammar to build an \textbf{Abstract Syntax Tree (AST)}. This tree serves as a structural map of the entire program's logic. Finally, the \textbf{Interpreter} walks through the AST node by node, executing commands while managing variables and functions through a \textbf{Scope} system. It also hooks into specialized modules like the Physics and Data Structures engines whenever the code calls for them.
+
 \newpage
 
 \section{Class Diagram}
-The following class diagram represents the structure and relationships between the different components of the Drim language:
-
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=0.9\linewidth]{images/FinalClassDiagramAdaptive.png}
+    \includegraphics[width=1\linewidth]{images/FinalClassDiagramAdaptive.png}
     \caption{Project Class Diagram}
 \end{figure}
 
-\newpage
+The class diagram shows how Drim is structured under the hood using object-oriented principles. The language's syntax revolves around two main base structures: \texttt{Expr} (Expressions) for things that result in values, and \texttt{Stmt} (Statements) for actions. Various specific nodes, such as \texttt{BinaryExpr} for math or \texttt{IfStmt} for control flow, inherit from these bases. The \texttt{Interpreter} acts as the central engine that evaluates these nodes, relying heavily on the \texttt{Scope} class to handle memory, nested blocks, and user-defined functions. Other utility modules like the \texttt{Lexer}, \texttt{Parser}, and specialized libraries (\texttt{Physics}, \texttt{DS}) integrate into this core structure, keeping the architecture modular and decoupled.
+
+\vspace{1cm}
 
 \section{Design Principles}
 The development of Drim was guided by the \textbf{SOLID} principles of object-oriented design to ensure the codebase remains maintainable and scalable:
