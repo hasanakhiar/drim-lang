@@ -3,17 +3,17 @@ project(drim_lang)
 
 set(CMAKE_CXX_STANDARD 17)
 
-include_directories(include)
+include_directories(code/include)
 
 
 set(SOURCES
-        src/Utils.cpp
-        src/Lexer.cpp
-        src/Parser.cpp
-        src/Interpreter.cpp
-        src/Main.cpp
-        src/Physics.cpp
-        src/DS.cpp
+        code/src/Utils.cpp
+        code/src/Lexer.cpp
+        code/src/Parser.cpp
+        code/src/Interpreter.cpp
+        code/src/Main.cpp
+        code/src/Physics.cpp
+        code/src/DS.cpp
 )
 
 add_executable(drim ${SOURCES})

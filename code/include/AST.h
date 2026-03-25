@@ -1,0 +1,183 @@
+//
+// Created by Muntahi Hasan Akhiar on 6/12/25.
+//
+
+#ifndef AST_H
+#define AST_H
+
+#include "Token.h"
+#include "Value.h"
+#include <memory>  
+#include <vector>
+
+// Everything that "Does something" is a Stmt (Statement)
+struct Stmt {
+    virtual ~Stmt() = default; // Virtual destructor is required for casting to work
+};
+
+// Everything that "Has a value" is an Expr (Expression)
+struct Expr {
+    virtual ~Expr() = default;
+};
+
+// 2. The Data (Expressions) Represents raw text like "hello" or "123"
+struct LiteralExpr : Expr {
+    Value value; // Can now hold long long, long double, or string
+    LiteralExpr(Value v) : value(v) {}
+};
+
+// Represents a variable name like 'myVar'
+struct VariableExpr : Expr {
+    Token name;
+    VariableExpr(Token n) : name(n) {}
+};
+
+// Represents Math: 1 + 2, a * b
+struct BinaryExpr : Expr {
+    std::shared_ptr<Expr> left;
+    Token op; // The operator (+, -, *, /)
+    std::shared_ptr<Expr> right;
+
+    BinaryExpr(std::shared_ptr<Expr> l, Token o, std::shared_ptr<Expr> r)
+        : left(l), op(o), right(r) {}
+};
+
+struct UnaryExpr : Expr {
+    Token op;
+    std::shared_ptr<Expr> right;
+    UnaryExpr(Token o, std::shared_ptr<Expr> r) : op(o), right(r) {}
+};
+
+struct CallExpr : Expr {
+    std::shared_ptr<Expr> callee; // The function being called (usually a VariableExpr)
+    Token paren; // The closing parenthesis ')' (for error reporting)
+    std::vector<std::shared_ptr<Expr>> arguments;
+
+    CallExpr(std::shared_ptr<Expr> c, Token p, std::vector<std::shared_ptr<Expr>> args)
+        : callee(c), paren(p), arguments(args) {}
+};
+
+struct ArrayLiteralExpr : Expr {
+    std::vector<std::shared_ptr<Expr>> elements;
+    ArrayLiteralExpr(std::vector<std::shared_ptr<Expr>> elems) : elements(elems) {}
+};
+
+struct ArrayAccessExpr : Expr {
+    Token name;
+    std::shared_ptr<Expr> index;
+    ArrayAccessExpr(Token n, std::shared_ptr<Expr> i) : name(n), index(i) {}
+};
+
+struct ConvertExpr : Expr {
+    std::shared_ptr<Expr> value;
+    std::shared_ptr<Expr> mode;
+    ConvertExpr(std::shared_ptr<Expr> v, std::shared_ptr<Expr> m) : value(v), mode(m) {}
+};
+
+// 3. The Commands (Statements) -- Command: drim(x)
+struct InputStmt : Stmt {
+    std::shared_ptr<Expr> target;
+    InputStmt(std::shared_ptr<Expr> t) : target(t) {}
+};
+
+// Command: wake("hello")
+struct PrintStmt : Stmt {
+    std::shared_ptr<Expr> expression;
+    PrintStmt(std::shared_ptr<Expr> e) : expression(e) {}
+};
+
+// Command: x = "value"
+struct AssignStmt : Stmt {
+    Token name;
+    std::shared_ptr<Expr> value;
+    AssignStmt(Token n, std::shared_ptr<Expr> v) : name(n), value(v) {}
+};
+
+struct ArrayAssignStmt : Stmt {
+    Token name;
+    std::shared_ptr<ArrayLiteralExpr> value;
+    ArrayAssignStmt(Token n, std::shared_ptr<ArrayLiteralExpr> v) : name(n), value(v) {}
+};
+
+struct ArrayElementAssignStmt : Stmt {
+    Token name;
+    std::shared_ptr<Expr> index;
+    std::shared_ptr<Expr> value;
+    ArrayElementAssignStmt(Token n, std::shared_ptr<Expr> i, std::shared_ptr<Expr> v)
+        : name(n), index(i), value(v) {}
+};
+
+struct ArrayDeclStmt : Stmt {
+    Token name;
+    ArrayDeclStmt(Token n) : name(n) {}
+};
+
+// Represents a sequence of statements executed in current scope
+// (used for comma-separated assignments like: a = 1, b = 2)
+struct SequenceStmt : Stmt {
+    std::vector<std::shared_ptr<Stmt>> statements;
+    SequenceStmt(std::vector<std::shared_ptr<Stmt>> stmts) : statements(stmts) {}
+};
+
+struct TypeStmt : Stmt {
+    std::shared_ptr<Expr> expression; // (variable or literal currently being checked)
+    TypeStmt(std::shared_ptr<Expr> e) : expression(e) {}
+};
+
+// Represents a block of code: { ... }
+struct BlockStmt : Stmt {
+    std::vector<std::shared_ptr<Stmt>> statements;
+    BlockStmt(std::vector<std::shared_ptr<Stmt>> stmts) : statements(stmts) {}
+};
+
+struct IfStmt : Stmt {
+    std::shared_ptr<Expr> condition;
+    std::shared_ptr<Stmt> thenBranch;
+    std::shared_ptr<Stmt> elseBranch; // Can be nullptr if there is no 'else'
+
+    IfStmt(std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> thenB, std::shared_ptr<Stmt> elseB)
+        : condition(cond), thenBranch(thenB), elseBranch(elseB) {}
+};
+
+// Represents: drimming condition { ... }
+struct WhileStmt : Stmt {
+    std::shared_ptr<Expr> condition;
+    std::shared_ptr<Stmt> body;
+    WhileStmt(std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> b)
+        : condition(cond), body(b) {}
+};
+
+// Represents: stopdrim (break)
+struct BreakStmt : Stmt {};
+
+// Represents: drimagain (continue)
+struct ContinueStmt : Stmt {};
+
+// For func myFunc(a, b) {}
+struct FunctionStmt : Stmt {
+    Token name;
+    std::vector<Token> params;
+    std::vector<std::shared_ptr<Stmt>> body; // the whole block/scope of INS (body)
+    FunctionStmt(Token n, std::vector<Token> p, std::vector<std::shared_ptr<Stmt>> b)
+        : name(n), params(p), body(b) {}
+};
+
+// Command: return x + y
+struct ReturnStmt : Stmt {
+    Token keyword; // storing token just for error handling feedback
+    std::shared_ptr<Expr> value;
+
+    ReturnStmt(Token k, std::shared_ptr<Expr> v) : keyword(k), value(v) {}
+};
+
+// a stmt that just evaluates an expr and discards the result
+// for lines like : user_func(param)
+
+struct ExprStmt : Stmt {
+    std::shared_ptr<Expr> expression;
+    ExprStmt(std::shared_ptr<Expr> e) : expression(e) {}
+};
+
+
+
+#endif

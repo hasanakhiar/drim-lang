@@ -1,8 +1,0 @@
-i = 10, j = 20
-wake(i)
-wake(j)
-
-x = 1
-x = 100, y = x + 2
-wake(x)
-wake(y)

@@ -1,0 +1,267 @@
+% !TeX program = xelatex
+\documentclass[12pt, a4paper]{article}
+
+% --- Essential Packages ---
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{lastpage}
+
+% --- For Fonts and Language Support (Essential for modern TeX) ---
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\usepackage[math-style=ISO]{unicode-math}
+
+% --- For Colors, Tables, and Advanced Text Formatting ---
+\usepackage[table, xcdraw]{xcolor}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{multirow}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{enumerate}
+\usepackage[shortlabels]{enumitem}
+
+% --- For Code Listings, Algorithms, and Diagrams ---
+\usepackage{minted}
+\usepackage[linesnumbered, ruled, vlined]{algorithm2e}
+\usepackage{subcaption}
+
+% --- For Hyperlinks and Document Structure ---
+\usepackage{fancyhdr}
+\usepackage[colorlinks, urlbordercolor=blue]{hyperref} 
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,
+    urlcolor=black,
+}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+
+% Define header
+\fancyhead[L]{SWE 4304: Software Project Lab I}
+\fancyhead[C]{}
+\fancyhead[R]{Project Report (Group 7)}
+
+% Define footer
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[L]{}
+\fancyfoot[C]{Page \thepage\ of \pageref{LastPage}}
+\fancyfoot[R]{}
+
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{figure}[!h]
+    \centering
+    \includegraphics[width=.2\textwidth]{images/iut_logo.png}
+\end{figure}
+\begin{center}
+
+\noindent\rule{\textwidth}{1.5pt}
+
+\Huge{\textbf{Islamic University of Technology}}\\
+\large{\textbf{Department of Computer Science and Engineering (CSE)}}\\
+\large{{B.Sc. in Software Engineering}}\\
+\vspace{0.2cm}
+\Large{\textbf{SWE 4304:} Software Project Lab I}\\
+\Large{{Winter}, 2024-2025}\\
+\noindent\rule{\textwidth}{0.5pt}
+
+\vspace{1cm}
+\Large{\textbf{Project Report}} \\
+\Large{{The ‘Drim’ Programming Language}} \\
+\vspace{1cm}
+
+\vspace{0.5cm}
+\large{\textbf{Group 7}} \\
+\large{Md. Muntahi Hasan Akhiar, 230042118}\\
+\large{S.M. Tahsinuzzaman Emon, 230042104}\\
+\large{Tamim Mahrush Naser, 230042133}\\
+
+\vspace{1.5cm}
+\large{\textbf{Supervisor}} \\
+\large{Farzana Tabassum,\\ Lecturer, CSE}\\
+
+\vspace{1.5cm}
+\large{{Date: December 13, 2025}} \\
+
+\end{center}
+\end{titlepage}
+
+\newpage
+
+% --- Table of Contents ---
+\tableofcontents
+
+\newpage
+
+\begin{center}
+    \Large{\textbf{The ‘Drim’ Programming Language}}
+\end{center}
+
+\section{Project Overview}
+\textbf{``Drim''} is a custom-built, interpreted programming language designed to run as a lightweight, headless command-line interface (CLI) application. Unlike standard compilers that translate source code into machine code binaries, Drim functions as a \textbf{Tree-Walk Interpreter}. This means the application reads high-level source code from \texttt{.drim} files, parses it into an intermediate structure, and executes the logic in real-time within a custom runtime environment.
+\\
+
+The primary goal of the project is to create a functional programming environment that supports dynamic typing, mathematical operations, and custom control flow structures (such as \texttt{drimming} for loops and \texttt{wakeOut} for output), providing a simplified yet robust platform for logic execution.
+\\
+\\
+The core of the project involves constructing the entire lifecycle of a programming language. This begins with a \textbf{Lexical Analyzer (Scanner)}, which breaks raw source text into meaningful tokens, categorizing them as identifiers, keywords, or literals. These tokens are then passed to a \textbf{Recursive Descent Parser}, which validates the syntax against a custom grammar and constructs a hierarchical \textbf{Abstract Syntax Tree (AST)}. This tree serves as the roadmap for the interpreter, representing the logical structure of the user's code.
+\\
+\\
+This system manually manages memory allocation and undeclared variable declaration. The interpreter handles control flow dynamically, allowing for conditional branching and iteration. Furthermore, the system includes a robust error-reporting mechanism that identifies syntax violations or runtime anomalies (such as type mismatches or unexpected token) with precise location data.
+\\
+\\
+The project is built entirely from scratch using \textbf{C++ (Standard 17)}, adhering to strict constraints that prohibit the use of external parsing libraries (like Lex or Yacc) or heavy standard library functions (like \texttt{std::stoi} or Regex). This ensures that every component of the language pipeline—from lexical analysis to memory management—is engineered manually by the team.
+
+
+\newpage
+\section{Motivation Behind the Project}
+At its core, Drim is about two things: preserving classroom culture and mastering complex engineering concepts.
+\subsection*{Cultural Significance}
+The name \textbf{“Drim”} originated as an inside joke and a shared meme within the student batch from the very first day of our university life. Rather than letting this remain as a joke that might die over time, we decided to create something that will help us immortalize the memory of our classroom culture. Which is the reason we are personalizing this project with syntax and keywords like “DrimIn”, “Drimming” to reflect our motivation. This relevance should increase our team’s engagement and passion for the project, since there is a class full of people looking forward to seeing our project, materialization of our joke, unfold.
+\subsection*{Engineering Challenges}
+From a technical perspective, this project serves as a demanding exercise in system-level programming. We chose to build an interpreter from scratch to accomplish three specific learning outcomes:
+\begin{itemize}
+    \item \textbf{Deep Understanding of Language Design:} By manually implementing lexical analysis, parsing, and interpretation, we gain firsthand experience with the inner workings of programming languages.
+    \item \textbf{Memory Management Proficiency:} The project requires careful handling of dynamic memory allocation and deallocation, fostering a strong grasp of pointers and resource management in C++.
+    \item \textbf{Problem-Solving Skills:} Restricting the use of third-party libraries and STL functions challenges us to engineer custom, innovative solutions from scratch and strengthens our problem-solving skills.
+    \item \textbf{Collaboration and Project Management:} Working as a group on a complex software project enhances teamwork, version control practices, and project planning skills.
+\end{itemize}
+
+
+
+\newpage
+
+\section{Key Features}
+The goal with Drim is to create something that balances simplicity with power. We are taking inspiration from standard C++ and Python architecture but deciding to go our own way with the implementation. By using custom keywords and limiting the feature set, we are avoiding unnecessary bloat. This will allow Drim to run logic through our custom Tree-Walk Interpreter implementation while keeping the code clean, readable, and uniquely ours.\\ 
+\begin{itemize}
+    \item \textbf{Input/Output:} \textbf{Drim} accepts user input via the \textbf{drimIn()} command and displays formatted output using the \textbf{wakeOut()} command
+    \item \textbf{Automatic Variable Assignment:} In the event of a user trying to assign a value to an undeclared variable, \textbf{DrimIn()} can declare the variable on its own with the intended data type and assign the value given by the user to the newly created variable.
+    \item \textbf{Dynamic Type Casting:} Variables in \textbf{Drim} can hold either String or Integer or Boolean values, with implicit type casting handled by the interpreter. This feature simplifies variable management and enhances user experience.
+    \item \textbf{Mathematical Operations:} \textbf{Drim} can correctly evaluate arithmetic expressions (+, -, *, /, \%) respecting standard operator precedence.
+    \item \textbf{Conversion Calculation:} Instead of requiring users to manually declare functions for common unit conversions, \textbf{Drim} provides pre-defined functions for converting between standard types (such as \textbf{degrees to radians}, \textbf{Fahrenheit to Celsius}, and \textbf{kilometers to feet}). This allows users to perform conversions efficiently without needing to look up rates externally.
+    \item \textbf{Physics \& Math Formulas:} \textbf{Drim} will be able to execute complex calculations, such as computing force or momentum, using pre-built functions rather than writing raw equations from scratch.
+    \item \textbf{Control Flow:} The language supports conditional statements (\texttt{if-else}) and looping constructs (\texttt{drimming} loops) to let users control the flow of execution based on dynamic conditions.
+    \item \textbf{Custom Syntax \& Semantics:} The language utilizes a unique set of keywords tailored to the project's theme. Notable examples include the \textbf{drimming}
+                                                command for iterative loops and the \texttt{wakeOut()} function for standard output. 
+                                                This custom syntax demonstrates the flexibility of the Lexer design.
+    \item \textbf{String Interpolation:} Unlike many basic custom languages that only supports simple string printing,
+                                         Drim supports advanced string interpolation. Users can embed variables directly within string literals (e.g., \texttt{wakeOut("Value: {x})}),
+                                         allowing for dynamic and readable output generation. 
+                                
+    \item \textbf{Helpful Error Reporting:} Coding rarely works perfectly on the first try, so \textbf{Drim} includes a robust error-reporting mechanism. It identifies syntax violations or runtime anomalies (such as type mismatches or unexpected token) and provides precise location data, helping users pinpoint exactly where things went wrong.
+    \item \textbf{Headless Execution:} Designed specifically as a backend tool, Drim runs as a lightweight, headless Command Line Interface (CLI) application. It executes scripts fetched from a .drim file directly in the terminal without the overhead of a Graphical User Interface (GUI).
+    \item \textbf{Zero-Dependency Architecture:} A defining feature of Drim is its independence. It does not rely on third-party parsing libraries or heavy standard library tools (such as Regex). Every component, from tokenization to the Abstract Syntax Tree (AST) construction, will be engineered manually using C++ 17.
+\end{itemize}
+
+\newpage
+\section{Flow Chart/Class Diagram}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.6\linewidth]{images/flowchart.png}
+    \caption{System Architecture Flow: From Source Code to Execution}
+    \label{fig:flowchart}
+\end{figure}
+\newpage
+\subsection*{Process Description}
+\begin{enumerate}
+    \item \textbf{Source Code (.drim):} The raw text file with .drim extension provided by the user containing the custom script.
+    \item \textbf{Lexer (Tokenizer):} Scans the source code character-by-character to generate a sequence of \textbf{Tokens} (Keywords, Identifiers, Literals). These tokens are used to identify/tag if the word or character is an Identifier, or Keyword, or String Literal, or Assign Operator etc. These tokens are passed down to the parser for processing.
+    \item \textbf{Parser:} Parser analyzes the token sequence against the language grammar rules. It checks if the user passed any unexpected character sequence or syntax that does not make sense. If the source code makes sense grammatically, parser then constructs an \textbf{Abstract Syntax Tree (AST)} composed of Statement and Expression nodes.
+    \\
+    This AST is used to track which process needs to be calculated first. For Example: in wakeOut(2+3), instead of trying to print “2+3” as a whole (even though it can not since it is not any variable or string literal), the program will calculate the value of “2+3 = 5” and pass that integer to the wakeOut() function. Parser is where it builds that flow of execution.
+    \item \textbf{Interpreter:} The Interpreter is responsible for the actual execution of the code. It traverses the Abstract Syntax Tree recursively, treating it as a roadmap for logic. At each step, it evaluates Expressions to derive values—like turning that 2+3 node into a 5—and executes Statements to perform actions. It works hand-in-hand with the Environment, managing the scope and lifecycle of variables to ensure the program runs consistently from start to finish. The interpreter executes the lines according to the flow of execution set by the parser.
+    \item \textbf{Output:} The result of the execution is printed to the standard output (Console).
+\end{enumerate}
+
+
+
+\newpage
+\section{Tools and Technologies}
+In designing Drim, our tooling choices were driven by a philosophy of complete control without relying on "black box" abstractions. Below are the technologies selected and the alternatives we weighed them against.
+
+\begin{itemize}
+    \item \textbf{Programming Language: C++ (Standard 17)} \\ 
+    \\
+    \textbf{Choice:} We selected C++ 17 to leverage modern features while retaining the manual memory control required for a manually built interpreter. \\
+    \textbf{Alternatives:} We considered \textbf{C++ 23} for its new library functions but opted out since usage of library functions is restricted.\\ 
+    Managed languages like \textbf{Java} or \textbf{C\#} were rejected to avoid the unpredictable performance overhead of Garbage Collection and the amount of library functions we need to use for basic tasks like input and output (scanner.nextInt(), scanner.nextLine()).\\
+    We did not choose \textbf{Python} or \textbf{JavaScript} due to their interpreted nature, which would complicate low-level memory management and pointer manipulation.
+
+    \item \textbf{Build System: CMake} \\
+    \\
+    \textbf{Choice:} Utilized to abstract the build process, ensuring the project allows for cross-platform compatibility without rewriting makefiles. \\
+    \textbf{Alternatives:} \textbf{GNU Make} was considered but seemed unmanageable as the project directory structure will grow. \\
+    Manual compilation scripts were rejected due to the difficulty of tracking header dependencies.
+
+    \item \textbf{Version Control: Git \& GitHub} \\
+    \\
+    \textbf{Choice:} Used for distributed and shared source code management, allowing us to implement experimental features in isolation using branches. And all team members are familiar with GitHub's interface. \\
+    \textbf{Alternatives:} Centralized systems like \textbf{SVN} were dismissed in favor of Git's standard branching and merging capabilities, which facilitate better team collaboration.
+
+    \item \textbf{IDE: CLion / Visual Studio Code} \\
+    \\
+    \textbf{Choice:} \textbf{CLion} is our primary environment for its in-depth memory inspection tools (vital for debugging segmentation faults), while \textbf{Visual Studio Code} is used as a lightweight editor for quick iteration.
+
+    \item \textbf{Diagramming: Mermaid.js / Gamma} \\
+    \\
+    \textbf{Choice:} Used for creating Gantt charts and architecture diagrams. \\
+    \textbf{Alternatives:} We avoided drag-and-drop tools like \textbf{Visio} or \textbf{Lucidchart} in favor of \textbf{Mermaid.js}, which allows us to treat "diagrams as code" and version control our documentation alongside the source.
+\end{itemize}
+
+\newpage
+\section{Proposed Timeline}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=1\linewidth]{images/PhaseFullHeight.png}
+    \caption{Timeline Diagram (Gantt Chart)}
+    \label{fig:timeline}
+    
+\end{figure}
+
+\newpage
+\section{Suggestions Received}
+During our initial review, we received valuable feedback regarding both our development methodology and our project demonstration. Below are the specific suggestions and our roadmap to address them.
+
+\begin{itemize}
+    \item \textbf{Development Strategy: Iterative Implementation} \\
+    \\
+    \textbf{Suggestion:} We were advised to adopt a "small-to-big" approach, focusing on implementing small, functional components before attempting large-scale features. \\
+    \\
+    \textbf{Resolution:} We are developing basic arithmetic and variable assignment first. Only after these core mechanics are stable will we integrate complex modules like the Physics and Unit Conversion engines.
+    \\
+
+    \item \textbf{Presentation Quality: Rehearsal and Delivery} \\
+    \\
+    \textbf{Suggestion:} It was noted that our presentation delivery lacked polish, and we were advised to dedicate more time to practicing practice before future presentations. \\
+    \\
+    \textbf{Resolution:} We acknowledge that our previous delivery was not up to standard and our expectation. For the final presentation, the team will schedule multiple dry runs to ensure clear explanation of technical concepts and a smoother transition between speakers.
+    \\
+
+    \item \textbf{Time Management during Demonstrations} \\
+    \\
+    \textbf{Suggestion:} We were critiqued on our time management, as we struggled to cover all necessary material and finish our presentation within the allotted timeframe. \\
+    \\
+    \textbf{Resolution:} To prevent rushing or running overtime, we will structure our next presentation with a strict minute-by-minute agenda. We will allocate fixed time slots for the introduction, technical deep-dive, and live demo to ensure a balanced and comprehensive showcase.
+
+\end{itemize}
+
+\newpage
+\section{Links}
+
+\begin{enumerate}
+
+    \item \href{(link)}{Presentation Slide Link}
+    \item \href{https://github.com/hasanakhiar/drim-lang}{GitHub Repository Link}
+\end{enumerate}
+
+\newpage
+\end{document}

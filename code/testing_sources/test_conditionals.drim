@@ -1,0 +1,54 @@
+wake("--- STARTING ELSE IF TEST ---")
+
+i = 10
+j = 20
+
+// Test 1: Standard IF
+if i == 10 {
+    wake("1. Simple IF passed")
+}
+
+// Test 2: IF - ELSE
+if i > 50 {
+    wake("2. Failed")
+} else {
+    wake("2. Else block passed")
+}
+
+// Test 3: IF - ELSE IF - ELSE
+// This checks if your recursion trick works
+x = 55
+if x < 10 {
+    wake("3. Failed (First IF)")
+}
+else if x > 100 {
+    wake("3. Failed (Else If)")
+}
+else if x == 55 {
+    wake("3. Else-If Recursion Passed!")
+}
+else {
+    wake("3. Failed (Else)")
+}
+
+// Test 4: Nested Logic (The ultimate test)
+// This proves that "else if" is really just "else { if ... }"
+score = 85
+wake("Checking Grade:")
+
+if score > 90 {
+    wake("Grade: A")
+}
+else if score > 80 {
+    wake("Grade: B (Correct)")
+
+    // Nested check inside the else-if block
+    if score == 85 {
+        wake("   -> Perfect mid-B score")
+    }
+}
+else {
+    wake("Grade: C or lower")
+}
+
+wake("--- END OF TEST ---")

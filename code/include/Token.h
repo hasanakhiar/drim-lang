@@ -1,0 +1,74 @@
+//
+// Created by Muntahi Hasan Akhiar on 4/12/25.
+//
+
+#ifndef TOKEN_H
+#define TOKEN_H
+#include <string>
+
+enum TokenType {
+
+    KW_DRIM,    // Input
+    KW_WAKE,    // Output
+    KW_TYPE,    // Type Function
+    KW_CONVERT, // Conversion Function
+    KW_IF, KW_ELSE,   //
+    KW_AND, KW_OR,    // (Logic)
+    KW_DRIMMING,       // While loop
+    KW_STOPDRIM,       // Break
+    KW_DRIMAGAIN,      // Continue
+
+    KW_FUNC, KW_RETURN, // For Runtime User Defined Functions
+
+    // Comparison Operators
+    TOKEN_LESS,          // <
+    TOKEN_GREATER,       // >
+    TOKEN_LESS_EQUAL,    // <=
+    TOKEN_GREATER_EQUAL, // >=
+    TOKEN_EQUAL_EQUAL,   // ==
+    TOKEN_BANG_EQUAL,    // != (Not Equal)
+    TOKEN_BANG,          // ! (Logical NOT)
+    
+    // Math Operators
+    TOKEN_PLUS,     // +
+    TOKEN_MINUS,    // -
+    TOKEN_STAR,     // *
+    TOKEN_SLASH,    // /
+    TOKEN_POW,      // ^
+    TOKEN_MOD,      // %
+
+    // Bitwise Operators
+    TOKEN_BIT_AND,    // &
+    TOKEN_BIT_OR,     // |
+    TOKEN_BIT_NOT,    // ~
+    TOKEN_LSHIFT,     // <<
+    TOKEN_RSHIFT,     // >>
+
+    TOKEN_IDENTIFIER, // Variable
+    TOKEN_STRING,     // "hello"
+    TOKEN_INT,        // 123
+    TOKEN_DOUBLE,
+    TOKEN_TRUE,
+    TOKEN_FALSE,
+
+    // Syntax
+    TOKEN_LPAREN,     // (
+    TOKEN_RPAREN,     // )
+    TOKEN_LBRACKET,   // [
+    TOKEN_RBRACKET,   // ]
+    TOKEN_ASSIGN,     // =
+    TOKEN_COMMA,      // ,
+    TOKEN_LBRACE,     // {
+    TOKEN_RBRACE,     // }
+
+    TOKEN_EOF,
+    TOKEN_ERROR
+};
+
+struct Token {
+    TokenType type;
+    std::string lexeme; // the actual value of Token "("
+    int line;
+};
+
+#endif
