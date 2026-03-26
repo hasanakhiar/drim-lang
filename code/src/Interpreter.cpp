@@ -149,15 +149,15 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
             std::string text = *s;
             std::string result = "";
             size_t start = 0;
-            
+
             while (true) {
                 size_t openBrace = text.find('{', start);
-                
+
                 // If found brace is escaped (preceded by \), skip it
                 while (openBrace != std::string::npos && openBrace > 0 && text[openBrace - 1] == '\\') {
                     // Remove the backslash from the result
-                    result += text.substr(start, openBrace - 1 - start); 
-                    result += '{'; 
+                    result += text.substr(start, openBrace - 1 - start);
+                    result += '{';
                     start = openBrace + 1;
                     openBrace = text.find('{', start);
                 }
@@ -166,29 +166,29 @@ Value Interpreter::evaluate(std::shared_ptr<Expr> expr) {
                     result += text.substr(start);
                     break;
                 }
-                
+
                 result += text.substr(start, openBrace - start);
                 size_t closeBrace = text.find('}', openBrace);
-                
+
                 // If closing brace is escaped, unescape it and continue searching
                 while (closeBrace != std::string::npos && closeBrace > 0 && text[closeBrace - 1] == '\\') {
                     // We found \{...\} - this is tricky because we might have skipped the real closing brace
                     // For now, let's just find the NEXT closing brace
                     closeBrace = text.find('}', closeBrace + 1);
                 }
-                
+
                 if (closeBrace == std::string::npos) {
                     result += text.substr(openBrace);
                     break;
                 }
-                
+
                 std::string varName = text.substr(openBrace + 1, closeBrace - openBrace - 1);
                 // Look up the variable in the current scope
                 Token dummyToken = {TOKEN_IDENTIFIER, varName, 0};
                 // Scope::get exits on failure, so we rely on that strict behavior
                 Value varVal = scope->get(dummyToken);
                 result += valToString(varVal);
-                
+
                 start = closeBrace + 1;
             }
             return Value(result);
@@ -436,6 +436,9 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
             printValue(evaluate(print->expression));
             std::cout << "\n";
+        }
+        else if (auto print = std::dynamic_pointer_cast<PrintInlineStmt>(cmd)) {
+            printValue(evaluate(print->expression));
         }
         else if (auto typeStmt = std::dynamic_pointer_cast<TypeStmt>(cmd)) {
             Value valToCheck = evaluate(typeStmt->expression);

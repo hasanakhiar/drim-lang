@@ -31,7 +31,7 @@ void Lexer::scanToken() {
         case '*': addToken(TOKEN_STAR); break;
         case '%': addToken(TOKEN_MOD); break;
         // Adding inline comments
-        case '/': 
+        case '/':
             if (match('/')) {
                 // A comment goes until the end of the line.
                 while (peek() != '\n' && !isAtEnd()) advance();
@@ -102,6 +102,7 @@ void Lexer::identifier() {
     TokenType type = TOKEN_IDENTIFIER;
     if (text == "drim") type = KW_DRIM;
     if (text == "wake") type = KW_WAKE;
+    if (text == "wakef") type = KW_WAKEINLINE;
     if (text == "type") type = KW_TYPE;
     if (text == "convert") type = KW_CONVERT;
 
@@ -113,11 +114,11 @@ void Lexer::identifier() {
 
     if (text == "and")  type = KW_AND;
     if (text == "or")   type = KW_OR;
-    
+
     if (text == "drimming")  type = KW_DRIMMING;
     if (text == "stopdrim")  type = KW_STOPDRIM;
     if (text == "drimagain") type = KW_DRIMAGAIN;
-    
+
     if (text == "true") type = TOKEN_TRUE;
     if (text == "false") type = TOKEN_FALSE;
 
@@ -167,7 +168,7 @@ char Lexer::peek(){
 }
 
 bool Lexer::isAtEnd(){
-    return current >= source.length(); 
+    return current >= source.length();
 }
 
 bool Lexer::match(char expected) {

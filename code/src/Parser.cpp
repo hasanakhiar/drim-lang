@@ -46,7 +46,7 @@ bool Parser::check(TokenType type) {
 // === EXPRESSION PARSING (Entry Point) ===
 
 std::shared_ptr<Expr> Parser::expression() {
-    return logicOr(); 
+    return logicOr();
 }
 // 1. Logic OR (Lowest Priority among logic)
 std::shared_ptr<Expr> Parser::logicOr() {
@@ -84,7 +84,7 @@ std::shared_ptr<Expr> Parser::equality() {
 // 4. Comparison (<, >, <=, >=)
 std::shared_ptr<Expr> Parser::comparison() {
     std::shared_ptr<Expr> expr = bitwiseOr(); // Chains to your existing bitwise logic
-    while (check(TOKEN_LESS) || check(TOKEN_GREATER) || 
+    while (check(TOKEN_LESS) || check(TOKEN_GREATER) ||
            check(TOKEN_LESS_EQUAL) || check(TOKEN_GREATER_EQUAL)) {
         Token op = advance();
         std::shared_ptr<Expr> right = bitwiseOr();
@@ -240,11 +240,11 @@ std::shared_ptr<Expr> Parser::primary() {
     if (check(KW_CONVERT)) {
         advance(); // consume conv_dist
         consume(TOKEN_LPAREN, "Expect '(' after conv_dist");
-        
+
         std::shared_ptr<Expr> val = expression();
         consume(TOKEN_COMMA, "Expect ',' after value");
         std::shared_ptr<Expr> mode = expression();
-        
+
         consume(TOKEN_RPAREN, "Expect ')' after arguments");
         return std::make_shared<ConvertExpr>(val, mode);
     }
@@ -329,6 +329,17 @@ std::shared_ptr<Stmt> Parser::statement() {
         consume(TOKEN_RPAREN, "Expect ')'");
         return std::make_shared<PrintStmt>(val);
     }
+
+    // 4.5 Print (wakef) without newline
+    if (check(KW_WAKEINLINE))
+    {
+        advance();
+        consume(TOKEN_LPAREN, "Expect '('");
+        std::shared_ptr<Expr> val = expression();
+        consume(TOKEN_RPAREN, "Expect ')'");
+        return std::make_shared<PrintInlineStmt>(val);
+    }
+
     // 5. TYPE
     if (check(KW_TYPE)) {
          advance(); consume(TOKEN_LPAREN, "Expect '('");
@@ -388,12 +399,12 @@ std::shared_ptr<Stmt> Parser::statement() {
 
 std::shared_ptr<Stmt> Parser::ifStatement() {
     consume(KW_IF, "Expect 'if'.");
-    
+
     // Parse Condition
     std::shared_ptr<Expr> condition = expression();
 
     // Parse 'Then' Branch
-    consume(TOKEN_LBRACE, "Expect '{' after if condition."); 
+    consume(TOKEN_LBRACE, "Expect '{' after if condition.");
     std::vector<std::shared_ptr<Stmt>> thenStmts = block();
     std::shared_ptr<Stmt> thenBranch = std::make_shared<BlockStmt>(thenStmts);
 
@@ -409,8 +420,8 @@ std::shared_ptr<Stmt> Parser::ifStatement() {
         advance(); // Eat 'else'
         if (check(KW_IF)) {
             // Found "else if" -> Recursively parse the next IF statement
-            elseBranch = ifStatement(); 
-        } 
+            elseBranch = ifStatement();
+        }
         else {
             // Found "else {" -> Parse the block normally
             consume(TOKEN_LBRACE, "Expect '{' after else.");

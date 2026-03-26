@@ -6,16 +6,16 @@ z = x * y
 str = "a"
 
 if x != y{
-    wake("ye")
+    wakef("ye")
 }
 
 type(z)
-wake(z)
-wake(str)
+wakef(z)
+wakef(str)
 
 // -- outputting unknown variable
 
 // Changing type of x, which was previously integer
 x = 100.1
 type(x)
-wake(x)
+wakef(x)

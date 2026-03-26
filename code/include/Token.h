@@ -10,6 +10,7 @@ enum TokenType {
 
     KW_DRIM,    // Input
     KW_WAKE,    // Output
+    KW_WAKEINLINE, //Output but no Newline
     KW_TYPE,    // Type Function
     KW_CONVERT, // Conversion Function
     KW_IF, KW_ELSE,   //
@@ -28,7 +29,7 @@ enum TokenType {
     TOKEN_EQUAL_EQUAL,   // ==
     TOKEN_BANG_EQUAL,    // != (Not Equal)
     TOKEN_BANG,          // ! (Logical NOT)
-    
+
     // Math Operators
     TOKEN_PLUS,     // +
     TOKEN_MINUS,    // -

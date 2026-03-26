@@ -7,7 +7,7 @@
 
 #include "Token.h"
 #include "Value.h"
-#include <memory>  
+#include <memory>
 #include <vector>
 
 // Everything that "Does something" is a Stmt (Statement)
@@ -84,6 +84,13 @@ struct InputStmt : Stmt {
 struct PrintStmt : Stmt {
     std::shared_ptr<Expr> expression;
     PrintStmt(std::shared_ptr<Expr> e) : expression(e) {}
+};
+
+// Command: wakef("hello")
+struct PrintInlineStmt : Stmt
+{
+    std::shared_ptr<Expr> expression;
+    PrintInlineStmt(std::shared_ptr<Expr> e) : expression(e) {}
 };
 
 // Command: x = "value"
