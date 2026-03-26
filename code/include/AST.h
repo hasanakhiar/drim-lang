@@ -83,14 +83,8 @@ struct InputStmt : Stmt {
 // Command: wake("hello")
 struct PrintStmt : Stmt {
     std::shared_ptr<Expr> expression;
-    PrintStmt(std::shared_ptr<Expr> e) : expression(e) {}
-};
-
-// Command: wakef("hello")
-struct PrintInlineStmt : Stmt
-{
-    std::shared_ptr<Expr> expression;
-    PrintInlineStmt(std::shared_ptr<Expr> e) : expression(e) {}
+    bool createNewLine;
+    PrintStmt(std::shared_ptr<Expr> e, bool newLine) : expression(e), createNewLine(newLine) {}
 };
 
 // Command: x = "value"

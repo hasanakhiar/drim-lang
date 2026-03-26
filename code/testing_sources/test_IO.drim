@@ -10,8 +10,8 @@ if x != y{
 }
 
 type(z)
-wakef(z)
-wakef(str)
+wake(z)
+wake(str)
 
 // -- outputting unknown variable
 

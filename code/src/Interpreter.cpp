@@ -435,10 +435,7 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> commands) {
         }
         else if (auto print = std::dynamic_pointer_cast<PrintStmt>(cmd)) {
             printValue(evaluate(print->expression));
-            std::cout << "\n";
-        }
-        else if (auto print = std::dynamic_pointer_cast<PrintInlineStmt>(cmd)) {
-            printValue(evaluate(print->expression));
+            if (print->createNewLine) std::cout << "\n";
         }
         else if (auto typeStmt = std::dynamic_pointer_cast<TypeStmt>(cmd)) {
             Value valToCheck = evaluate(typeStmt->expression);

@@ -327,7 +327,7 @@ std::shared_ptr<Stmt> Parser::statement() {
         advance(); consume(TOKEN_LPAREN, "Expect '('");
         std::shared_ptr<Expr> val = expression();
         consume(TOKEN_RPAREN, "Expect ')'");
-        return std::make_shared<PrintStmt>(val);
+        return std::make_shared<PrintStmt>(val, true);
     }
 
     // 4.5 Print (wakef) without newline
@@ -337,7 +337,7 @@ std::shared_ptr<Stmt> Parser::statement() {
         consume(TOKEN_LPAREN, "Expect '('");
         std::shared_ptr<Expr> val = expression();
         consume(TOKEN_RPAREN, "Expect ')'");
-        return std::make_shared<PrintInlineStmt>(val);
+        return std::make_shared<PrintStmt>(val, false);
     }
 
     // 5. TYPE
