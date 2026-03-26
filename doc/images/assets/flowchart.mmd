@@ -1,0 +1,51 @@
+---
+config:
+  layout: dagre
+---
+graph TD
+    classDef file fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef process fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef data fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
+    classDef memory fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef io fill:#ffebee,stroke:#c62828,stroke-width:2px;
+    Source[("Source Code<br>(.drim)")]:::file -->|String| Lexer(Lexer):::process
+    Lexer -->|"scanTokens()"| Tokens[("Token Stream<br>vector&lt;Token&gt;")]:::data
+    Tokens --> LexerError{Valid?}
+    LexerError -- No --> Err1[Report Error & Exit]:::io
+    LexerError -- Yes --> Parser(Parser):::process
+
+    Parser -->|"parse()"| AST[("Abstract Syntax Tree<br>vector&lt;shared_ptr&lt;Stmt&gt;&gt;")]:::data
+    AST --> ParserError{Valid?}
+    ParserError -- No --> Err2[Report Error & Exit]:::io
+    ParserError -- Yes --> Interpreter(Interpreter):::process
+    subgraph Runtime_Engine [Interpreter Execution Cycle]
+        direction TB
+        Interpreter -->|"interpret(stmts)"| StmtLoop{Iterate Stmts}:::process
+
+        StmtLoop -->|"dynamic_pointer_cast"| Dispatch{Dispatch Type}:::process
+        Dispatch -- "IfStmt / WhileStmt" --> ControlFlow[Evaluate Condition]:::process
+        ControlFlow -->|Recurse| Interpreter
+        Dispatch -- "AssignStmt / ArrayDecl" --> ScopeMgr(Scope Manager):::memory
+        ScopeMgr -->|"define/assign"| Memory[("Runtime Memory<br>(Values, Arrays)")]:::memory
+        Dispatch -- "PrintStmt / InputStmt" --> Console[("Console I/O<br>(std::cin / std::cout)")]:::io
+        Dispatch -- "ExprStmt / ReturnStmt" --> Eval(Expression Evaluator):::process
+    end
+    subgraph Evaluation_Logic [Expression Evaluation]
+        direction TB
+        Eval -->|"evaluate(expr)"| ExprType{Expr Type}:::process
+
+        ExprType -- "Binary / Unary" --> Compute[Math / Logic Op]:::process
+        ExprType -- "Variable / ArrayAccess" --> Fetch[Fetch from Scope]:::memory
+        Fetch <--> Memory
+
+        ExprType -- "CallExpr (Function)" --> FuncRes{Resolve Func}:::process
+        FuncRes -- "User Defined" --> NewScope[Create Scope]:::memory
+        NewScope -->|Exec Body| Interpreter
+
+        FuncRes -- "Physics Function" --> PhysLib(execPhysics):::process
+        FuncRes -- "DS Function" --> DSLib(execDS):::process
+    end
+    Compute -->|Result| Eval
+    PhysLib -->|Value| Eval
+    DSLib -->|Value| Eval
+    Eval -->|Value| StmtLoop

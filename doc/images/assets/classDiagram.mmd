@@ -1,0 +1,178 @@
+---
+config:
+  layout: elk
+---
+classDiagram
+    direction LR
+    class Lexer {
+        +string source
+        +vector~Token~ tokens
+        +int start
+        +int current
+        +int line
+        +Lexer(string s)
+        +scanTokens() void
+        -scanToken() void
+        -identifier() void
+        -string() void
+        -number() void
+        -addToken(TokenType type) void
+        -advance() char
+        -peek() char
+        -isAtEnd() bool
+        -match(char expected) bool
+    }
+
+    class Token {
+        <<struct>>
+        +TokenType type
+        +string lexeme
+        +int line
+    }
+
+    class Parser {
+        -vector~Token~ tokens
+        -int current
+        +Parser(vector~Token~ t)
+        +parse() vector~shared_ptr~Stmt~~
+        -isAtEnd() bool
+        -check(TokenType type) bool
+        -expression() shared_ptr~Expr~
+        -statement() shared_ptr~Stmt~
+        -peek() Token
+        -advance() Token
+    }
+
+    class Interpreter {
+        -shared_ptr~Scope~ scope
+        +Interpreter()
+        +interpret(vector~shared_ptr~Stmt~~ commands) void
+        +evaluate(shared_ptr~Expr~ expr) AnyValue
+    }
+
+    class Scope {
+        -shared_ptr~Scope~ enclosing
+        -map~string, AnyValue~ values
+        -map~string, vector~AnyValue~~ arrays
+        -map~string, string~ arrayElementTypes
+        -map~string, shared_ptr~FunctionStmt~~ functions
+        +Scope()
+        +Scope(shared_ptr~Scope~ enclosing)
+        +define(string name, AnyValue value) void
+        +assign(Token name, AnyValue value) void
+        +get(Token name) AnyValue
+        +contains(string name) bool
+        +declareArray(Token name)
+        +assignArray(Token name, vector~AnyValue~ elements)
+        +assignArrayElement(Token name, int index, AnyValue value)
+        +getArrayElement(Token name, int index) AnyValue
+    }
+
+    class AnyValue {
+        <<variant>>
+        +variant~long long, long double, string, bool, shared_ptr~vector~AnyValue~~~~ data
+    }
+
+    class ReturnValue {
+        <<struct>>
+        +AnyValue value
+        +ReturnValue(AnyValue v)
+    }
+    class Stmt {
+        <<interface>>
+        +virtual ~Stmt()
+    }
+
+    class Expr {
+        <<interface>>
+        +virtual ~Expr()
+    }
+    class LiteralExpr {
+        +AnyValue value
+    }
+    class BinaryExpr {
+        +shared_ptr~Expr~ left
+        +Token op
+        +shared_ptr~Expr~ right
+    }
+    class UnaryExpr {
+        +Token op
+        +shared_ptr~Expr~ right
+    }
+    class VariableExpr {
+        +Token name
+    }
+    class CallExpr {
+        +shared_ptr~Expr~ callee
+        +Token paren
+        +vector~shared_ptr~Expr~~ arguments
+    }
+    class ArrayLiteralExpr {
+        +vector~shared_ptr~Expr~~ elements
+    }
+    class ArrayAccessExpr {
+        +Token name
+        +shared_ptr~Expr~ index
+    }
+    class ConvertExpr {
+        +shared_ptr~Expr~ value
+        +shared_ptr~Expr~ mode
+    }
+    class PrintStmt {
+        +shared_ptr~Expr~ expression
+    }
+    class AssignStmt {
+        +Token name
+        +shared_ptr~Expr~ value
+    }
+    class ArrayAssignStmt {
+        +Token name
+        +shared_ptr~ArrayLiteralExpr~ value
+    }
+    class ArrayElementAssignStmt {
+        +Token name
+        +shared_ptr~Expr~ index
+        +shared_ptr~Expr~ value
+    }
+    class ArrayDeclStmt
+    class IfStmt
+    class WhileStmt
+    class FunctionStmt
+    class ReturnStmt
+    class InputStmt {
+        +shared_ptr~Expr~ target
+    }
+    class SequenceStmt
+    class execPhysics
+    class execDS
+    Lexer --> Token : produces
+    Parser --> Token : consumes
+    Parser --> Stmt : produces (AST)
+    
+    Interpreter --> Scope : manages state
+    Interpreter --> AnyValue : evaluates to
+    Interpreter ..> execPhysics : calls
+    Interpreter ..> execDS : calls (Stack/Queue)
+
+    Scope --> Scope : nesting (parent)
+    ReturnValue --> AnyValue : wraps
+    Stmt <|-- PrintStmt
+    Stmt <|-- AssignStmt
+    Stmt <|-- ArrayAssignStmt
+    Stmt <|-- ArrayElementAssignStmt
+    Stmt <|-- ArrayDeclStmt
+    Stmt <|-- IfStmt
+    Stmt <|-- WhileStmt
+    Stmt <|-- FunctionStmt
+    Stmt <|-- ReturnStmt
+    Stmt <|-- InputStmt
+    Stmt <|-- SequenceStmt
+
+    Expr <|-- LiteralExpr
+    Expr <|-- BinaryExpr
+    Expr <|-- UnaryExpr
+    Expr <|-- VariableExpr
+    Expr <|-- CallExpr
+    Expr <|-- ArrayLiteralExpr
+    Expr <|-- ArrayAccessExpr
+    Expr <|-- ConvertExpr
