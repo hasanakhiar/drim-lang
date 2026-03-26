@@ -11,8 +11,7 @@
 \usepackage{fontspec}
 \setmainfont{Times New Roman}
 \usepackage[math-style=ISO]{unicode-math}
-\usepackage[table, xcdraw]{xcolor}
-\usepackage[dvipsnames]{xcolor}
+\usepackage[table, xcdraw, dvipsnames]{xcolor}
 \usepackage{multirow}
 \usepackage[framemethod=TikZ]{mdframed}
 \usepackage{enumerate}
@@ -87,7 +86,7 @@ Another problem is that most languages do not have built-in functions for things
 
 \vspace{0.4cm}
 
-Beyond these technical issues, we also wanted to address a personal motivation. The name \textbf{“Drim”} started as an inside joke and a meme in our student batch from our first day at university. We wanted to build something that would keep this memory alive through custom keywords like \texttt{drimIn} and \texttt{drimming}. 
+Beyond these technical issues, we also wanted to address a personal motivation. The name \textbf{“Drim”} started as an inside joke and a meme in our student batch from our first day at university. We wanted to build something that would keep this memory alive through custom keywords like \texttt{drim} and \texttt{drimming}. 
 
 \vspace{0.4cm}
 
@@ -121,7 +120,7 @@ The following features were implemented:
     \item \textbf{Built-in Physics Functions:} Direct support for formulas like mass-energy ($E=mc^2$), force ($F=ma$), and more.
     \item \textbf{Unit Conversion Engine:} Built-in tools to convert between things like inches and centimeters, Fahrenheit and Celsius, or kilometers and feet.
     \item \textbf{Control Flow:} Supports conditional logic (if-else), loops (\texttt{drimming}), and loop control using \texttt{stopdrim} (break) and \texttt{drimagain} (continue).
-    \item \textbf{Custom Syntax:} Uses unique keywords like \texttt{drimming} for loops and \texttt{wakeOut} for output to match the project's theme.
+    \item \textbf{Custom Syntax:} Uses unique keywords like \texttt{drimming} for loops and \texttt{wake} for output to match the project's theme.
     \item \textbf{String Interpolation:} Allows variables to be put directly inside strings (like \texttt{"Value: \{x\}"}) for easier printing.
     \item \textbf{Error Reporting:} Provides clear error messages with exact locations when something goes wrong in the code.
     \item \textbf{Commenting System:} Supports single-line comments using \texttt{//}.
@@ -201,7 +200,7 @@ The work was divided among the team members as follows:
 \begin{itemize}
     \item \textbf{Md. Muntahi Hasan Akhiar:}
     \begin{itemize}
-        \item Created basic input and output systems and basic architecure of lexer, parser, and interpreter with Error Reporting.
+        \item Created basic input and output systems and basic architecture of lexer, parser, and interpreter with Error Reporting.
         \item Implemented variable management and automatic type casting.
         \item Developed conditional logic and loops (\texttt{drimming}).
         \item Added support for arrays and multi-assignment syntax.
