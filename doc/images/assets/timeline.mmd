@@ -1,0 +1,59 @@
+---
+config:
+  theme: neutral
+  themeVariables:
+    doneTaskBkgColor: '#4caf50'       # Green background for done tasks
+    doneTaskBorderColor: '#388e3c'    # Darker green border
+    doneTaskTextColor: '#ffffff'      # White text
+  gantt:
+    barHeight: 50
+    barGap: 12
+    topPadding: 110
+    leftPadding: 290
+    rightPadding: 500
+    fontSize: 13
+    sectionFontSize: 18
+---
+gantt
+title Drim Project Timeline (Extended)
+dateFormat  YYYY-MM-DD
+axisFormat  %W
+
+section Course Intro & Team Form
+Done                 :done, w1, 2025-01-01, 1w
+
+section Idea Gen & Requirements
+Done                 :done, w2, after w1, 1w
+
+section Proposal Presentation
+Done                 :done, w3, after w2, 1w
+
+section Lexer & Utils Impl
+Done                 :done, w4, after w3, 1w
+
+section AST & Parser Design
+Done               :done, w5, after w4, 2w
+
+section Math Interpreter Logic
+Done              :done, w7, after w5, 1w
+
+section Mid-Semester Exam Break
+Break                :done, crit, w8, after w7, 1w
+
+section Variables & Logic (If/Else)
+Done              :done, w10, after w8, 2w
+
+section Progress Presentation
+Done            :done, milestone, w11, after w10, 0d
+
+section Loops & Adv Features
+Done              :done, w12, after w10, 4w
+
+section I/O, Polish & Final Report
+Done              :done, w15, after w12, 2w
+
+section Final Project Presentation
+Milestone            :active, crit, milestone, w17, after w15, 0d
+
+section Continuous Debug & Testing
+Done               :done, c1, after w3, 13w
