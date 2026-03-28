@@ -5,7 +5,7 @@ wake("  - User Defined Function")
 func PN(n){
     i = 0
     drimming i < n {
-        wake("")
+        wakef("\n")
         i = i + 1
     } 
 }
