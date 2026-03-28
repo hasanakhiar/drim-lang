@@ -1,0 +1,42 @@
+wake("Showcasing...")
+wake("  - Physics & Conversion Function Engine")
+wake("")
+wake("")
+wake("")
+
+
+
+
+
+wake("--- UNIT CONVERSIONS (Built-in) ---")
+wakef("1 inch to cm: ")
+wake(convert(1, "in_cm"))
+
+wakef("0 Celsius to Fahrenheit: ")
+wake(convert(0, "c_f"))
+
+wakef("1 kg to lbs: ")
+wake(convert(1, "kg_lb"))
+
+wakef("100 kmph to mph: ")
+wake(convert(100, "kmph_mph"))
+
+wakef("1 USD to BDT: ")
+wake(2 + convert(1, "usd_bdt"))
+wake("")
+wake("")
+
+
+
+wake("--- Physics Function Engine (Built-in) ---")
+s = speed(100, 2)
+wakef("Speed (100, 2): ")
+wake(s)
+
+f = force(10, 9.8)
+wakef("Force (10, 9.8): ")
+wake(f)
+
+final = final_velocity(10, 9.8, 2)
+wakef("Final velocity (10, 9.8, 2): ")
+wake(final)

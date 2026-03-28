@@ -1,0 +1,41 @@
+wake("Showcasing...")
+wake("  - I/O")
+wake("  - Data Types")
+wake("  - Automatic Assignment")
+wake("  - Type Casting/ Dynamic Typing")
+wake("  - String Interpolation + Output Formatting")
+wake("")
+wake("")
+wake("")
+
+
+// Int
+x = 100
+wakef("Value if x: {x}  ")
+wakef("with type: ")
+type(x)
+
+
+// Float
+x = 9.9
+wakef("Value if x: {x}  ")
+wakef("with type: ")
+type(x)
+
+// Bool
+x = true
+wakef("Value if x: {x}  ")
+wakef("with type: ")
+type(x)
+
+// String
+x = "I am a string :)"
+wakef("Value if x: {x}  ")
+wakef("with type: ")
+type(x)
+
+wakef("Input x: ")
+drim(x)
+wakef("Value if x: {x}  ")
+wakef("with type: ")
+type(x)

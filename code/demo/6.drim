@@ -1,0 +1,86 @@
+wake("Showcasing...")
+wake("  - Scoped Variable/ Function")
+wake("  - User Defined Function")
+
+func PN(n){
+    i = 0
+    drimming i < n {
+        wake("")
+        i = i + 1
+    } 
+}
+
+PN(3)
+
+
+
+// Scoped Variable
+wake("--- Scoped Variable ---")
+a = 1
+{
+    wake("Printing a: {a}")
+    c = 12
+    wake("Printing c: {c}")
+}
+
+// wake("Printing c: {c}") // Will give error
+
+PN(3)
+
+
+// Functions
+wake("--- User Defined Function ---")
+func add(a, b) {
+    return a + b
+}
+
+func say_hello(name) {
+    wake("Hello, " + name + "!")
+}
+
+{
+    func ret(N){
+        return N
+    }
+    wake("Testing ret inside: " + ret(10))
+}
+
+// wake("Testing ret OutSide: " + ret(22)) // Gives error
+
+
+// Main
+result = add(10, 20)
+wake("10 + 20 = " + result)
+
+say_hello("Tester")
+
+func check_speed(s) {
+    if (s > 100) {
+        return "Fast"
+    }
+    return "Normal"
+}
+
+wake("Speed 120 is " + check_speed(120))
+wake("Speed 80 is " + check_speed(80))
+
+
+PN(3)
+
+
+// Recursion (Forced Local Variable )
+wake("--- Recursion ---")
+func fib(n) {
+    if (n <= 1) {
+        return n
+    }
+    return fib(n - 1) + fib(n - 2)
+}
+
+f1 = fib(1)
+wake("fib(1) = " + f1)
+f2 = fib(2)
+wake("fib(2) = " + f2)
+f14 = fib(14)
+wake("fib(14) = " + f14)
+return

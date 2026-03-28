@@ -1,0 +1,52 @@
+wake("Showcasing...")
+wake("  - Branching")
+wake("  - Scoped Variable")
+wake("")
+wake("")
+wake("")
+
+
+
+
+// Normal Control Flow
+a = 10
+b = 20
+
+// Test: AND / OR
+if a < 15 and b > 15 {
+    wake("Logic Test 1: AND passed (a < 15 and b > 15)")
+}
+
+if a > 50 or b == 20 {
+    wake("Logic Test 2: OR passed (b is 20)")
+}
+
+// Nested IF and ELSE IF
+score = 85
+wake("Checking Grade Logic (Score 85):")
+
+if score > 90 {
+    wake("Grade: A")
+}
+else if score > 80 {
+    wake("Grade: B")
+    // Nested Block
+    if score >= 85 {
+        wake(" -> High B (Nested If Worked)")
+    }
+}
+else {
+    wake("Grade: C or lower")
+}
+
+
+
+// Scoped Variable
+{
+    wake("Printing a: {a}")
+    c = 12
+    wake("Printing c: {c}")
+}
+
+// wake("Printing c: {c}") // Will give error
+

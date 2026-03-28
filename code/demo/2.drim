@@ -1,0 +1,39 @@
+wake("Showcasing...")
+wake("  - Math Operations")
+wake("")
+wake("")
+wake("")
+
+
+wake("Basic Operation") 
+calc = 10 + 5 * 2
+wakef("10 + 5 * 2 should be 20:")
+wake(calc)
+
+
+wake("Testing Power (^)")
+sq = 5 ^ 2
+calc2 = 2 ^ 3 ^ 2
+wakef("5 squared is: ")
+wake(sq)
+wake("")
+
+
+// Testing Bitwise Operations (Integers only)
+// 5 is 0101, 3 is 0011
+bit_and = 5 & 3
+bit_or = 5 | 3
+wakef("5 & 3 (Bitwise AND) (Should be 0001 (1)): ")
+wake(bit_and)
+wakef("5 | 3 (Bitwise OR) (Should be 0111 (7)): ")
+wake(bit_or)
+wake("")
+
+// Bitwise
+shift_val = 1 << 4
+wakef("1 Left Shift 4 -> Should be 10000 (16): ")
+wake(shift_val)
+shift_val = 16 >> 2
+wakef("16 right shift 2 -> Should be 100 (4): ")
+wake(shift_val)
+

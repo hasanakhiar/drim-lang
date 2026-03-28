@@ -1,0 +1,80 @@
+wake("Showcasing...")
+wake("  - Data Structure Stack/Queue")
+wake("")
+wake("")
+wake("")
+
+
+
+wake("--- Stack ---")
+s = stack_create()
+wakef("Stack created. Size: ")
+wake(stack_size(s))
+
+wake("Pushing 10, 20, 30...")
+i = 10
+drimming i <=30{
+    stack_push(s, i)
+    i = i + 10
+}
+
+wakef("Stack size after push: ")
+wake(stack_size(s))
+
+wakef("Top element (peek): ")
+wake(stack_peek(s))
+
+wake("Popping elements...")
+wake(stack_pop(s))
+wake(stack_pop(s))
+
+wakef("Stack size after pop: ")
+wake(stack_size(s))
+
+wakef("Is empty?: ")
+wake(stack_empty(s))
+
+wake("Popping last element...")
+wake(stack_pop(s))
+
+wakef("Is empty now?: ")
+wake(stack_empty(s))
+
+
+
+wake("")
+wake("")
+wake("")
+
+
+wake("--- Queue ---")
+s = queue_create()
+wakef("Queue created. Size: ")
+wake(queue_size(s))
+
+wake("Pushing 10, 20, 30...")
+queue_enqueue(s, 10)
+queue_enqueue(s, 20)
+queue_enqueue(s, 30)
+
+wakef("Queue size after enqueue: ")
+wake(queue_size(s))
+
+wakef("Top element (peek): ")
+wake(queue_peek(s))
+
+wake("Popping elements...")
+wake(queue_dequeue(s))
+wake(queue_dequeue(s))
+
+wakef("Queue size after dequeue: ")
+wake(queue_size(s))
+
+wakef("Is empty? ")
+wake(queue_empty(s))
+
+wake("Popping last element...")
+wake(queue_dequeue(s))
+
+wakef("Is empty now? ")
+wake(queue_empty(s))
